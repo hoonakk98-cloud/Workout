@@ -192,6 +192,29 @@ function Confirm({ ask, close }) {
   );
 }
 
+function Summary({ date, log, logs, onClose }) {
+  const done = log.exercises.filter(e => e.cardio ? e.sets[0] && e.sets[0].done : e.sets.some(s => s.done));
+  const str = done.filter(e => !e.cardio);
+  const sets = str.reduce((a, e) => a + e.sets.filter(s => s.done && s.t !== "w").length, 0);
+  const prs = str.filter(e => prOf(logs, date, e)).length;
+  const ov = overload(logs, date);
+  const box = (v, t) => <div className="rounded-xl bg-zinc-800 py-2"><div className="text-lg font-bold">{v}</div><div className="text-xs text-zinc-400">{t}</div></div>;
+  return (
+    <div className="fixed inset-0 z-50 bg-black/70 flex items-end" onClick={onClose}>
+      <div className="w-full max-w-xl mx-auto bg-zinc-900 rounded-t-3xl max-h-[85vh] flex flex-col overflow-hidden" style={{ paddingBottom: "env(safe-area-inset-bottom,0px)" }} onClick={e => e.stopPropagation()}>
+        <div className="shrink-0 flex items-center justify-between p-4 pb-2"><div><div className="font-bold">운동 결과 {ov && "🔥"}{prs > 0 && "🏆"}</div><div className="text-xs text-zinc-400">{date}{log.routine && ` · ${log.routine}`}</div></div><button aria-label="닫기" onClick={onClose}><Icon n="x" /></button></div>
+        <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-4">
+          <div className="grid grid-cols-3 gap-2 text-center">{box(`${fmt(vol(log))}${U}`, "총 볼륨")}{box(`${done.length}개`, "운동 종목")}{box(`${sets}세트`, "완료 세트")}</div>
+          {!done.length && <div className="py-8 text-center text-sm text-zinc-500">완료 체크한 세트가 없어요.</div>}
+          <div className="mt-3 divide-y divide-zinc-800">{done.map((e, i) => e.cardio
+            ? <div key={i} className="py-3 flex items-center justify-between"><div className="font-medium text-sm">{e.name}</div><div className="text-xs text-zinc-400">{+e.sets[0].min || 0}분</div></div>
+            : <div key={i} className="py-3"><div className="flex items-center justify-between"><div className="font-medium text-sm">{e.name}{prOf(logs, date, e) && " 🏆"}</div><div className="text-xs text-zinc-400">{fmt(vol({ exercises: [e] }))}{U}</div></div><div className="text-xs text-zinc-400 mt-1">{e.sets.filter(s => s.done).map(s => `${s.t ? s.t.toUpperCase() + " " : ""}${s.w || 0}${U}×${s.r || 0}`).join(" / ")}</div></div>)}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Day({ date, data, setData, onClose, mark }) {
   const log = data.logs[date] || { routine: "", mood: 0, memo: "", exercises: [] };
   const [newEx, setNewEx] = useState("");
@@ -200,6 +223,7 @@ function Day({ date, data, setData, onClose, mark }) {
   const [lastCat, setLastCat] = useState("가슴");
   const [showEx, setShowEx] = useState(false);
   const [kick, setKick] = useState(0);
+  const [showRes, setShowRes] = useState(false);
   const sug = newEx.trim() ? Object.values(EX).flat().filter(n => nk(n).includes(nk(newEx))).slice(0, 8) : [];
   const fav = data.fav || [];
   const toggleFav = n => setData(d => ({ ...d, fav: (d.fav || []).includes(n) ? d.fav.filter(x => x !== n) : [...(d.fav || []), n] }));
@@ -275,6 +299,8 @@ function Day({ date, data, setData, onClose, mark }) {
         {sug.length > 0 && <div className="mt-1.5 rounded-xl bg-zinc-900 divide-y divide-zinc-800 overflow-hidden">{sug.map(n => <button key={n} onClick={() => { const c = Object.keys(EX).find(k => EX[k].includes(n)); addEx(n, c === "유산소"); setLastCat(c); }} className="w-full text-left px-3 py-2.5 text-sm flex items-center justify-between">{n}{log.exercises.some(e => e.name === n) && <span className="text-xs text-amber-400">추가됨</span>}</button>)}</div>}
         {ask && <Confirm ask={ask} close={() => setAsk(null)} />}
         <Timer kick={kick} />
+        <button onClick={() => setShowRes(true)} className="mt-3 w-full py-3 rounded-xl bg-amber-500 text-black font-semibold">운동 결과 보기</button>
+        {showRes && <Summary date={date} log={log} logs={data.logs} onClose={() => setShowRes(false)} />}
       </div>
     </div>
   );
@@ -295,11 +321,11 @@ function Calendar({ data, open }) {
       <div className="grid grid-cols-7 gap-1">
         {cells.map((d, i) => {
           if (!d) return <div key={i} />;
-          const key = `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`, l = data.logs[key], v = vol(l);
+          const key = `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`, l = data.logs[key];
           return (
             <button key={i} onClick={() => open(key)} className={`min-h-[68px] rounded-lg p-1 text-left flex flex-col ${l ? "bg-zinc-800" : "bg-zinc-900"} ${key === today ? "ring-2 ring-amber-500" : ""}`}>
               <div className="flex justify-between text-xs"><span className={key === today ? "text-amber-400 font-bold" : "text-zinc-400"}>{d}</span>{overload(data.logs, key) && <span className="text-xs leading-none">🔥</span>}</div>
-              {l && <><div className="mt-auto text-[11px] leading-tight font-medium text-amber-300 truncate">{l.routine || "운동"}</div><div className="text-[11px] leading-tight text-zinc-400">{fmt(v)}{U}</div></>}
+              {l && <><div className="mt-auto text-[11px] leading-tight font-medium text-amber-300 truncate">{l.routine || "운동"}</div></>}
             </button>
           );
         })}
