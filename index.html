@@ -273,7 +273,6 @@ function Day({ date, data, setData, onClose, mark }) {
                 </div>
               </div>
               <div className="text-xs text-zinc-500 mt-0.5">{p ? `${tr("지난번")} ${p.map(s => ex.cardio ? tr("{0}분", s.min) : `${s.w}${U} x ${tr("{0}회", s.r)}`).join(" / ")}` : tr("이전 기록 없음")}</div>
-              {p && p.length > 0 && suggest(p, ex.cardio) && <div className="text-xs text-amber-400 mt-0.5">{tr("🎯 오늘 목표")} {suggest(p, ex.cardio)}</div>}
               
               {ex.cardio ? (
               <div className="flex items-center gap-1.5 mt-3">
