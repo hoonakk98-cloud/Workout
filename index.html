@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>과부하 로그</title>
+<meta name="theme-color" content="#0c0e12">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="과부하 로그">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html,body{background:#0c0e12;color:#e7e9ee;font-family:-apple-system,"Pretendard","Noto Sans KR",system-ui,sans-serif}
+input{background:#1a1e26;border-radius:8px;padding:6px;text-align:center;width:100%;min-width:0;outline:none}
+input:focus,textarea:focus{box-shadow:0 0 0 2px #f59e0b}
+textarea{background:#1a1e26;border-radius:8px;padding:8px;width:100%;outline:none}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+const KEY = "overload-log-v2";
+try { localStorage.removeItem("overload-log-v1"); } catch (e) {}
+const P = {
+  l:"m15 18-6-6 6-6", r:"m9 18 6-6-6-6", x:"M18 6 6 18M6 6l12 12", plus:"M5 12h14M12 5v14",
+  trash:"M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2",
+  cal:"M8 2v4M16 2v4M3 4h18v18H3zM3 10h18", list:"M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01",
+  set:"M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6",
+  dl:"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3",
+  ul:"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12",
+  chk:"M20 6 9 17l-5-5", share:"M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13", timer:"M10 2h4M12 14l3-3M12 22a8 8 0 1 0 0-16 8 8 0 0 0 0 16z",
+  load:"M3 7h6l2 2h10v10H3z", edit:"M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"
+};
+const Icon = ({ n, s = 18, c = "" }) => (
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={c}><path d={P[n]} /></svg>
+);
+
+const EX = {
+  "가슴": ["바벨 벤치프레스","인클라인 바벨 벤치프레스","디클라인 바벨 벤치프레스","덤벨 벤치프레스","인클라인 덤벨 벤치프레스","디클라인 덤벨 벤치프레스","스미스머신 벤치프레스","스미스머신 인클라인 프레스","체스트 프레스 머신","인클라인 체스트 프레스 머신","덤벨 플라이","인클라인 덤벨 플라이","케이블 크로스오버","로우 케이블 크로스오버","펙덱 플라이","푸시업","체스트 딥스"],
+  "등": ["데드리프트","컨벤셔널 데드리프트","스모 데드리프트","랙 풀","풀업","친업","와이드 그립 풀업","랫풀다운","클로즈 그립 랫풀다운","바벨 로우","펜들레이 로우","덤벨 원암 로우","티바 로우","시티드 케이블 로우","머신 로우","체스트 서포티드 로우","스트레이트 암 풀다운","페이스풀","백 익스텐션","슈러그","덤벨 풀오버"],
+  "어깨": ["오버헤드 프레스(바벨)","밀리터리 프레스","덤벨 숄더 프레스","아놀드 프레스","스미스머신 숄더 프레스","숄더 프레스 머신","사이드 레터럴 레이즈","케이블 사이드 레터럴 레이즈","머신 레터럴 레이즈","프론트 레이즈","벤트오버 리어 델트 레이즈","리버스 펙덱","케이블 페이스 풀","업라이트 로우","바벨 슈러그","덤벨 슈러그"],
+  "하체": ["바벨 백 스쿼트","프론트 스쿼트","스미스머신 스쿼트","고블릿 스쿼트","핵 스쿼트","불가리안 스플릿 스쿼트","레그 프레스","레그 익스텐션","레그 컬(라잉)","시티드 레그 컬","루마니안 데드리프트","스티프 레그 데드리프트","굿모닝","워킹 런지","리버스 런지","스텝업","힙 쓰러스트","글루트 브릿지","케이블 킥백","힙 어브덕션 머신","힙 어덕션 머신","스탠딩 카프 레이즈","시티드 카프 레이즈"],
+  "이두": ["바벨 컬","EZ바 컬","덤벨 컬","얼터네이트 덤벨 컬","해머 컬","인클라인 덤벨 컬","프리처 컬","머신 프리처 컬","컨센트레이션 컬","케이블 컬","스파이더 컬","바이셉스 컬 머신","리버스 컬"],
+  "삼두": ["클로즈그립 벤치프레스","라잉 트라이셉스 익스텐션(스컬크러셔)","덤벨 오버헤드 익스텐션","케이블 오버헤드 익스텐션","케이블 푸쉬다운(바)","케이블 푸쉬다운(로프)","리버스 그립 푸쉬다운","트라이셉스 딥스","벤치 딥스","덤벨 킥백","머신 딥스","다이아몬드 푸시업"]
+};
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const ago = n => { const d = new Date(); d.setDate(d.getDate()-n); return ymd(d); };
+const sets = (...a) => a.map(([w,r]) => ({ w, r, done: true }));
+const SAMPLE = () => ({
+  routines: [
+    { id: "r1", name: "상체 A", exercises: [{ name: "인클라인 벤치프레스", sets: 3 }, { name: "딥스", sets: 3 }, { name: "사이드 레터럴 레이즈", sets: 3 }] },
+    { id: "r2", name: "하체", exercises: [{ name: "스쿼트", sets: 4 }, { name: "루마니안 데드리프트", sets: 3 }] },
+  ],
+  logs: {
+    [ago(7)]: { routine: "상체 A", mood: 7, memo: "컨디션 보통", exercises: [
+      { name: "인클라인 벤치프레스", sets: sets([65,8],[65,8],[65,7]) }, { name: "딥스", sets: sets([10,10],[10,9],[10,8]) }, { name: "사이드 레터럴 레이즈", sets: sets([8,12],[8,12],[8,10]) }] },
+    [ago(1)]: { routine: "상체 A", mood: 8, memo: "무게 올림, 좋았음", exercises: [
+      { name: "인클라인 벤치프레스", sets: sets([70,8],[70,8],[67.5,8]) }, { name: "딥스", sets: sets([10,12],[10,10],[10,9]) }, { name: "사이드 레터럴 레이즈", sets: sets([8,12],[8,12],[8,12]) }] },
+  },
+});
+const load = () => { try { const d = JSON.parse(localStorage.getItem(KEY)); if (d && d.logs) return { routines: [], logs: d.logs }; } catch (e) {} return { routines: [], logs: {} }; };
+
+const vol = l => (l?.exercises || []).reduce((a, e) => a + e.sets.reduce((b, s) => b + (s.done ? (+s.w||0)*(+s.r||0) : 0), 0), 0);
+const e1rm = e => Math.max(0, ...e.sets.filter(s => s.done).map(s => (+s.w||0)*(1+(+s.r||0)/30)));
+const prevDates = (logs, date) => Object.keys(logs).filter(d => d < date).sort().reverse();
+const prevEx = (logs, date, name) => {
+  for (const d of prevDates(logs, date)) { const e = logs[d].exercises.find(x => x.name === name && x.sets.some(s => s.done)); if (e) return e.sets.filter(s => s.done); }
+  return null;
+};
+const overload = (logs, date) => {
+  const l = logs[date]; if (!l?.routine || !vol(l)) return false;
+  const d = prevDates(logs, date).find(d => logs[d].routine === l.routine && vol(logs[d]) > 0);
+  return !!d && vol(l) > vol(logs[d]);
+};
+const fmt = n => Math.round(n).toLocaleString();
+const beep = () => { try { const a = new (window.AudioContext||window.webkitAudioContext)(); [0,.25,.5].forEach(t => { const o = a.createOscillator(), g = a.createGain(); o.connect(g); g.connect(a.destination); o.frequency.value = 880; g.gain.value = .15; o.start(a.currentTime+t); o.stop(a.currentTime+t+.15); }); navigator.vibrate && navigator.vibrate([200,100,200]); } catch (e) {} };
+
+function ExPicker({ onPick, onClose, init, added }) {
+  const [cat, setCat] = useState("가슴");
+  const [custom, setCustom] = useState(init || "");
+  return (
+    <div className="fixed inset-0 z-50 bg-black/70 flex items-end" onClick={onClose}>
+      <div className="w-full max-w-xl mx-auto bg-zinc-900 rounded-t-3xl h-[80vh] flex flex-col overflow-hidden" style={{ paddingBottom: "env(safe-area-inset-bottom,0px)" }} onClick={e => e.stopPropagation()}>
+        <div className="shrink-0 flex items-center justify-between p-4 pb-2"><div className="font-bold">종목 선택</div><button onClick={onClose}><Icon n="x" /></button></div>
+        <div className="shrink-0 grid grid-cols-6 gap-1.5 px-4 pb-3">{Object.keys(EX).map(c => <button key={c} onClick={() => setCat(c)} className={`h-10 rounded-xl text-sm whitespace-nowrap flex items-center justify-center ${cat === c ? "bg-amber-500 text-black font-semibold" : "bg-zinc-800 text-zinc-300"}`}>{c}</button>)}</div>
+        <div className="flex-1 min-h-0 overflow-y-auto px-4 divide-y divide-zinc-800 border-t border-zinc-800">
+          {EX[cat].map(n => <button key={n} onClick={() => onPick(n)} className="w-full text-left py-3 flex items-center justify-between">{n}{added.includes(n) && <span className="text-xs text-amber-400">추가됨</span>}</button>)}
+        </div>
+        <div className="shrink-0 p-4 pt-3 flex gap-2 border-t border-zinc-800">
+          <input style={{ textAlign: "left", padding: 10 }} placeholder="목록에 없는 종목 직접 입력" value={custom} onChange={e => setCustom(e.target.value)} />
+          <button onClick={() => custom.trim() && onPick(custom.trim())} className="px-4 rounded-lg bg-amber-500 text-black font-semibold shrink-0">추가</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Timer() {
+  const [inp, setInp] = useState("90");
+  const [left, setLeft] = useState(null);
+  const [run, setRun] = useState(false);
+  const [done, setDone] = useState(false);
+  useEffect(() => { if (!run) return; const t = setTimeout(() => { if (left <= 1) { beep(); setDone(true); setRun(false); setLeft(null); setTimeout(() => setDone(false), 4000); } else setLeft(left - 1); }, 1000); return () => clearTimeout(t); }, [run, left]);
+  const shown = left ?? (parseInt(inp) || 0);
+  const start = () => { const l = left ?? parseInt(inp); if (!l) return; setDone(false); setLeft(l); setRun(true); };
+  const reset = () => { setRun(false); setLeft(null); setDone(false); };
+  const preset = n => { setInp(String(n)); reset(); };
+  return (
+    <div className={`mt-5 rounded-2xl p-3 ${done ? "bg-amber-500 text-black animate-pulse" : "bg-zinc-900"}`}>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2 text-sm font-medium"><Icon n="timer" />{done ? "시간 종료!" : "휴식 타이머"}</div>
+        <div className="text-3xl font-bold tabular-nums">{Math.floor(shown/60)}:{String(shown%60).padStart(2,"0")}</div>
+      </div>
+      <div className="flex items-center gap-2 mt-3">
+        <div className="w-24 shrink-0"><input inputMode="numeric" value={inp} onChange={e => { setInp(e.target.value.replace(/\D/g, "")); reset(); }} /></div>
+        <span className="text-xs opacity-70">초</span>
+        {run ? <button onClick={() => setRun(false)} className="flex-1 py-2 rounded-lg bg-zinc-700 text-white">중지</button> : <button onClick={start} className="flex-1 py-2 rounded-lg bg-amber-500 text-black font-semibold">시작</button>}
+        <button onClick={reset} className="flex-1 py-2 rounded-lg bg-zinc-800 text-white">초기화</button>
+      </div>
+      <div className="grid grid-cols-4 gap-2 mt-2">{[30,60,90,120].map(n => <button key={n} onClick={() => preset(n)} className={`py-2 rounded-lg text-sm ${parseInt(inp) === n ? "bg-zinc-600 text-white" : "bg-zinc-800 text-zinc-300"}`}>{n}초</button>)}</div>
+    </div>
+  );
+}
+
+function Confirm({ ask, close }) {
+  return (
+    <div className="fixed inset-0 z-[60] bg-black/70 grid place-items-center p-6" onClick={close}>
+      <div className="w-full max-w-sm bg-zinc-900 rounded-2xl p-5" onClick={e => e.stopPropagation()}>
+        <div className="text-sm leading-relaxed">{ask.msg}</div>
+        <div className="flex gap-2 mt-4">
+          {!ask.info && <button onClick={close} className="flex-1 py-2.5 rounded-xl bg-zinc-800">취소</button>}
+          <button onClick={() => { ask.fn(); close(); }} className={`flex-1 py-2.5 rounded-xl font-semibold ${ask.info ? "bg-amber-500 text-black" : "bg-red-500 text-white"}`}>{ask.info ? "확인" : "삭제"}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Day({ date, data, setData, onClose }) {
+  const log = data.logs[date] || { routine: "", mood: 0, memo: "", exercises: [] };
+  const [newEx, setNewEx] = useState("");
+  const [pick, setPick] = useState(false);
+  const [ask, setAsk] = useState(null);
+  const [showEx, setShowEx] = useState(false);
+  const addEx = name => { const p = prevEx(data.logs, date, name); save(l => l.exercises.push({ name, sets: [{ w: p ? p[0].w : "", r: p ? p[0].r : "", done: false }] })); setNewEx(""); };
+  const save = fn => setData(d => { const l = JSON.parse(JSON.stringify(d.logs[date] || { routine: "", mood: 0, memo: "", exercises: [] })); fn(l); return { ...d, logs: { ...d.logs, [date]: l } }; });
+  const close = () => { if (!log.exercises.length && !log.memo && !log.mood) setData(d => { const logs = { ...d.logs }; delete logs[date]; return { ...d, logs }; }); onClose(); };
+  const loadDate = (d, force) => { if (log.exercises.length && !force) { setAsk({ msg: "현재 기록을 불러온 기록으로 바꿀까요?", fn: () => loadDate(d, true) }); return; } const src = data.logs[d]; save(l => { l.routine = l.routine || src.routine; l.exercises = src.exercises.map(e => ({ name: e.name, sets: e.sets.map(s => ({ w: s.w, r: s.r, done: false })) })); }); setPick(false); };
+  const pastDates = Object.keys(data.logs).filter(d => d !== date && data.logs[d].exercises.length).sort().reverse();
+  const remove = () => setAsk({ msg: "이 날짜의 기록을 삭제할까요?", fn: () => { setData(d => { const logs = { ...d.logs }; delete logs[date]; return { ...d, logs }; }); onClose(); } });
+  return (
+    <div className="fixed inset-0 z-40 bg-[#0c0e12] overflow-y-auto" style={{ paddingTop: "env(safe-area-inset-top,0px)" }}>
+      <div className="max-w-xl mx-auto p-4 pb-32">
+        <div className="flex items-center justify-between mb-3">
+          <div><div className="text-lg font-bold">{date}</div><div className="text-xs text-zinc-400">총 볼륨 {fmt(vol(log))}kg {overload(data.logs, date) && "🔥"}</div></div>
+          <div className="flex gap-2"><button onClick={remove} className="px-3 py-2 rounded-lg bg-zinc-800 text-red-400 flex items-center gap-1 text-sm"><Icon n="trash" s={16} />기록 삭제</button><button onClick={close} className="p-2 rounded-lg bg-zinc-800"><Icon n="x" /></button></div>
+        </div>
+        <button onClick={() => setPick(!pick)} className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-amber-500 text-black font-semibold"><Icon n="load" />날짜별 불러오기</button>
+        {pick && <div className="mt-2 rounded-xl bg-zinc-900 divide-y divide-zinc-800 max-h-64 overflow-y-auto">{pastDates.length ? pastDates.map(d => <button key={d} onClick={() => loadDate(d)} className="w-full text-left p-3 hover:bg-zinc-800 flex justify-between items-center"><span>{d} <span className="text-amber-400 text-sm">{data.logs[d].routine}</span></span><span className="text-xs text-zinc-500">{data.logs[d].exercises.length}종목 · {fmt(vol(data.logs[d]))}kg</span></button>) : <div className="p-3 text-sm text-zinc-400">불러올 수 있는 다른 날짜의 기록이 없습니다.</div>}</div>}
+        <input style={{ textAlign: "left", padding: 10 }} className="mt-3" placeholder="운동 이름 (예: 상체 A) — 🔥 비교 기준" value={log.routine} onChange={e => save(l => { l.routine = e.target.value; })} />
+        {log.exercises.map((ex, ei) => {
+          const p = prevEx(data.logs, date, ex.name);
+          return (
+            <div key={ei} className="mt-4 rounded-2xl bg-zinc-900 p-3">
+              <div className="flex items-center justify-between">
+                <div className="font-semibold">{ex.name}</div>
+                <button onClick={() => save(l => l.exercises.splice(ei, 1))} className="text-zinc-500"><Icon n="x" s={16} /></button>
+              </div>
+              <div className="text-xs text-zinc-500 mt-0.5">{p ? `지난번 ${p.map(s => `${s.w}kg x ${s.r}회`).join(" / ")}` : "이전 기록 없음"}</div>
+              <div className="grid grid-cols-[28px_1fr_64px_56px_36px_24px] gap-1.5 items-center mt-2 text-[11px] text-zinc-500 text-center"><span>세트</span><span>이전 기록</span><span>무게(kg)</span><span>횟수</span><span>완료</span><span /></div>
+              {ex.sets.map((s, si) => {
+                const ps = p && (p[si] || p[p.length-1]);
+                return (
+                  <div key={si} className={`grid grid-cols-[28px_1fr_64px_56px_36px_24px] gap-1.5 items-center mt-1.5 text-center ${s.done ? "opacity-90" : ""}`}>
+                    <span className="text-sm text-zinc-400">{si+1}</span>
+                    <span className="text-xs text-zinc-600">{ps ? `${ps.w}kg x ${ps.r}` : "-"}</span>
+                    <input inputMode="decimal" value={s.w} onChange={e => save(l => { l.exercises[ei].sets[si].w = e.target.value; })} />
+                    <input inputMode="numeric" value={s.r} onChange={e => save(l => { l.exercises[ei].sets[si].r = e.target.value; })} />
+                    <button onClick={() => { const will = !s.done; save(l => { l.exercises[ei].sets[si].done = will; }); }} className={`h-8 rounded-lg grid place-items-center ${s.done ? "bg-amber-500 text-black" : "bg-zinc-800 text-zinc-500"}`}><Icon n="chk" s={16} /></button>
+                    <button onClick={() => save(l => l.exercises[ei].sets.splice(si, 1))} className="text-zinc-600"><Icon n="x" s={14} /></button>
+                  </div>
+                );
+              })}
+              <div className="flex items-center justify-between mt-2">
+                <button onClick={() => save(l => { const ss = l.exercises[ei].sets; const t = ss[ss.length-1]; ss.push({ w: t ? t.w : "", r: t ? t.r : "", done: false }); })} className="text-xs text-sky-400 flex items-center gap-1"><Icon n="plus" s={14} />세트 추가</button>
+                <div className="text-xs text-zinc-400">추정 1RM <b className="text-zinc-200">{e1rm(ex) ? e1rm(ex).toFixed(1) : "-"}kg</b> · 볼륨 {fmt(vol({ exercises: [ex] }))}kg</div>
+              </div>
+            </div>
+          );
+        })}
+        <div className="mt-4 flex gap-2">
+          <input style={{ textAlign: "left", padding: 10 }} placeholder="종목 직접 추가" value={newEx} onChange={e => setNewEx(e.target.value)} onKeyDown={e => e.key === "Enter" && newEx.trim() && addEx(newEx.trim())} />
+          {showEx && <ExPicker init={newEx} added={log.exercises.map(e => e.name)} onClose={() => setShowEx(false)} onPick={n => { addEx(n); setShowEx(false); }} />}
+          <button onClick={() => setShowEx(true)} className="px-3 rounded-lg bg-amber-500 text-black"><Icon n="plus" /></button>
+        </div>
+        {ask && <Confirm ask={ask} close={() => setAsk(null)} />}
+        <Timer />
+      </div>
+    </div>
+  );
+}
+
+function Calendar({ data, open }) {
+  const [cur, setCur] = useState(() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); });
+  const y = cur.getFullYear(), m = cur.getMonth(), first = cur.getDay(), days = new Date(y, m+1, 0).getDate(), today = ymd(new Date());
+  const cells = [...Array(first).fill(null), ...Array.from({ length: days }, (_, i) => i+1)];
+  return (
+    <div>
+      <div className="flex items-center justify-between my-3">
+        <button onClick={() => setCur(new Date(y, m-1, 1))} className="p-2 rounded-lg bg-zinc-800"><Icon n="l" /></button>
+        <div className="font-bold text-lg">{y}년 {m+1}월</div>
+        <button onClick={() => setCur(new Date(y, m+1, 1))} className="p-2 rounded-lg bg-zinc-800"><Icon n="r" /></button>
+      </div>
+      <div className="grid grid-cols-7 gap-1 text-center text-xs text-zinc-500 mb-1">{["일","월","화","수","목","금","토"].map(d => <div key={d}>{d}</div>)}</div>
+      <div className="grid grid-cols-7 gap-1">
+        {cells.map((d, i) => {
+          if (!d) return <div key={i} />;
+          const key = `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`, l = data.logs[key], v = vol(l);
+          return (
+            <button key={i} onClick={() => open(key)} className={`min-h-[68px] rounded-lg p-1 text-left flex flex-col ${l ? "bg-zinc-800" : "bg-zinc-900"} ${key === today ? "ring-2 ring-amber-500" : ""}`}>
+              <div className="flex justify-between text-xs"><span className={key === today ? "text-amber-400 font-bold" : "text-zinc-400"}>{d}</span>{overload(data.logs, key) && <span className="text-[11px] leading-none">🔥</span>}</div>
+              {l && <><div className="mt-auto text-[10px] leading-tight font-medium text-amber-300 truncate">{l.routine || "운동"}</div><div className="text-[10px] leading-tight text-zinc-400">{fmt(v)}kg</div></>}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function Settings({ data, setData }) {
+  const f = useRef();
+  const [ask, setAsk] = useState(null);
+  const exp = () => { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" })); a.download = `overload-backup-${ymd(new Date())}.json`; a.click(); };
+  const imp = e => { const file = e.target.files[0]; if (!file) return; const r = new FileReader(); r.onload = () => { try { const d = JSON.parse(r.result); if (!d.logs) throw 0; setAsk({ msg: "현재 데이터를 백업 파일로 덮어쓸까요?", fn: () => setData({ routines: [], logs: d.logs }) }); } catch (x) { setAsk({ msg: "올바른 백업 파일이 아닙니다.", fn: () => {}, info: true }); } }; r.readAsText(file); e.target.value = ""; };
+  return (
+    <div className="mt-3 space-y-3">
+      <div className="rounded-2xl bg-zinc-900 p-4 text-sm text-zinc-400">모든 데이터는 이 브라우저에만 저장됩니다. 기기를 바꾸거나 브라우저 데이터를 지우기 전에 백업하세요.<div className="mt-1 text-zinc-300">기록 {Object.keys(data.logs).length}일</div></div>
+      <button onClick={exp} className="w-full py-3 rounded-xl bg-zinc-800 flex items-center justify-center gap-2"><Icon n="dl" />JSON으로 내보내기</button>
+      <button onClick={() => f.current.click()} className="w-full py-3 rounded-xl bg-zinc-800 flex items-center justify-center gap-2"><Icon n="ul" />JSON 가져오기</button>
+      <button onClick={() => setAsk({ msg: "모든 운동 기록을 삭제할까요? 되돌릴 수 없습니다.", fn: () => setData({ routines: [], logs: {} }) })} className="w-full py-3 rounded-xl bg-zinc-800 text-red-400 flex items-center justify-center gap-2"><Icon n="trash" />모든 운동 기록 삭제</button>
+      {ask && <Confirm ask={ask} close={() => setAsk(null)} />}
+      <input ref={f} type="file" accept="application/json,.json" onChange={imp} className="hidden" />
+    </div>
+  );
+}
+
+function InstallTip() {
+  const ua = navigator.userAgent, ios = /iPhone|iPad|iPod/.test(ua), android = /Android/.test(ua);
+  const standalone = (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone;
+  const [hide, setHide] = useState(() => { try { return !!localStorage.getItem("a2hs-off"); } catch (e) { return false; } });
+  const [evt, setEvt] = useState(null);
+  useEffect(() => {
+    try { const c = document.createElement("canvas"); c.width = c.height = 180; const x = c.getContext("2d"); x.fillStyle = "#0c0e12"; x.fillRect(0, 0, 180, 180); x.font = "110px serif"; x.textAlign = "center"; x.textBaseline = "middle"; x.fillText("🏋️", 90, 98); const l = document.createElement("link"); l.rel = "apple-touch-icon"; l.href = c.toDataURL("image/png"); document.head.appendChild(l); } catch (e) {}
+    const h = e => { e.preventDefault(); setEvt(e); }; window.addEventListener("beforeinstallprompt", h); return () => window.removeEventListener("beforeinstallprompt", h);
+  }, []);
+  if (hide || standalone) return null;
+  const off = () => { try { localStorage.setItem("a2hs-off", "1"); } catch (e) {} setHide(true); };
+  return (
+    <div className="mt-3 rounded-2xl bg-zinc-900 border border-zinc-800 p-3 flex gap-3 items-start">
+      <div className="text-sm flex-1">
+        <div className="font-semibold">바탕화면에 앱처럼 추가하기</div>
+        <div className="text-zinc-400 mt-1">{ios ? "Safari 하단의 공유 버튼 → '홈 화면에 추가'를 누르세요." : android ? "Chrome 메뉴(⋮) → '홈 화면에 추가' 또는 '앱 설치'를 누르세요." : "브라우저 메뉴에서 '홈 화면에 추가' 또는 '앱 설치'를 선택하세요."}</div>
+        {evt && <button onClick={() => { evt.prompt(); setEvt(null); }} className="mt-2 px-3 py-1.5 rounded-lg bg-amber-500 text-black text-sm font-semibold">홈 화면에 추가</button>}
+      </div>
+      <button onClick={off} className="text-zinc-500"><Icon n="x" s={16} /></button>
+    </div>
+  );
+}
+
+function App() {
+  const [data, setData] = useState(load);
+  const [tab, setTab] = useState("cal");
+  const [date, setDate] = useState(null);
+  useEffect(() => { try { localStorage.setItem(KEY, JSON.stringify(data)); } catch (e) {} }, [data]);
+  const tabs = [["cal", "달력", "cal"], ["set", "설정", "set"]];
+  return (
+    <div className="max-w-xl mx-auto px-4 pb-24">
+      <div className="pt-4 text-xl font-extrabold tracking-tight">과부하 로그</div>
+      <InstallTip />
+      {tab === "cal" && <Calendar data={data} open={setDate} />}
+      {tab === "set" && <Settings data={data} setData={setData} />}
+      {date && <Day date={date} data={data} setData={setData} onClose={() => setDate(null)} />}
+      <nav className="fixed bottom-0 inset-x-0 z-30 bg-zinc-950/95 border-t border-zinc-800" style={{ paddingBottom: "env(safe-area-inset-bottom,0px)" }}>
+        <div className="max-w-xl mx-auto grid grid-cols-2">
+          {tabs.map(([k, t, ic]) => <button key={k} onClick={() => setTab(k)} className={`py-2.5 flex flex-col items-center text-xs gap-0.5 ${tab === k ? "text-amber-400" : "text-zinc-500"}`}><Icon n={ic} />{t}</button>)}
+        </div>
+      </nav>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
