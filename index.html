@@ -50,6 +50,9 @@ html[data-theme="light"] .text-red-400{color:#dc2626}
 <script type="text/babel">
 const { useState, useEffect, useRef } = React;
 const KEY = "overload-log-v2";
+const PRO_KEY = "overload-pro";
+const FREE_ROUTINES = 3;
+const DEV_PRO = true; // 출시 전에 false로 바꾸고 Play 결제(RevenueCat 등)를 연결하세요
 const P = {
   l:"m15 18-6-6 6-6", r:"m9 18 6-6-6-6", x:"M18 6 6 18M6 6l12 12", plus:"M5 12h14M12 5v14",
   trash:"M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2",
@@ -74,7 +77,7 @@ const EX = {
   "복근": ["크런치","리버스 크런치","바이시클 크런치","오블리크 크런치","케이블 크런치","머신 크런치","짐볼 크런치","싯업","디클라인 싯업","V업","행잉 레그 레이즈","행잉 니 레이즈","토 투 바","캡틴스 체어 레그 레이즈","라잉 레그 레이즈","플러터 킥","힐 터치","토 터치","플랭크","사이드 플랭크","리버스 플랭크","할로우 바디 홀드","앱 휠 롤아웃","팔로프 프레스","케이블 우드찹","러시안 트위스트","덤벨 사이드 벤드","데드버그","마운틴 클라이머","드래곤 플래그"],
   "유산소": ["트레드밀 걷기","트레드밀 인클라인 걷기","트레드밀 러닝","트레드밀 인터벌","야외 러닝","조깅","파워 워킹","걷기","등산","사이클(실내 자전거)","스피닝","사이클링(야외)","에어바이크","일립티컬","스텝밀(천국의 계단)","계단 오르기","로잉머신","스키에르그","줄넘기","수영","배틀로프","버피","점핑잭","하이니","마운틴 클라이머(유산소)","복싱 샌드백","킥복싱","에어로빅","댄스","HIIT","타바타","서킷 트레이닝"]
 };
-const EN = {"휴식 끝!":"Rest over!","다음 세트 가세요 💪":"Next set 💪","휴식 중":"Resting","종료 시각 {0}":"Ends at {0}","검색 또는 직접 입력": "Search or type a name", "기록 삭제": "Delete log", "날짜별 불러오기": "Load from date", "다음 달": "Next month", "닫기": "Close", "설정": "Settings", "세트 삭제": "Delete set", "세트 표시 안내": "Set markers", "아래로": "Move down", "운동 이름 (예: 상체 A)": "Workout name (e.g. Upper A)", "위로": "Move up", "이전 달": "Previous month", "종목 삭제": "Delete exercise", "즐겨찾기": "Favorite", "증량 폭": "Increment", "타이머 설정": "Timer settings", "화면 꺼짐 방지": "Keep screen on", "휴식 시간(초)": "Rest time (sec)", "드롭 세트": "Drop set", "실패 세트": "Failure set", "웜업 · 볼륨에서 제외": "Warm-up · excluded from volume", "12회 이상 달성하면 목표 무게를 이만큼 올려요": "Target weight goes up by this much after 12+ reps", "JSON 가져오기": "Import JSON", "JSON으로 내보내기": "Export JSON", "⚠️ 정체 감지": "⚠️ Plateau detected", "과부하 로그": "Overload Log", "기록 화면을 열어둔 동안 화면이 꺼지지 않아요": "Screen stays on while a log is open", "기록한 세션": "Sessions logged", "되돌리기": "Undo", "모든 데이터는 이 브라우저에만 저장됩니다. 기기를 바꾸거나 브라우저 데이터를 지우기 전에 백업하세요.": "All data is stored only in this browser. Back up before switching devices or clearing browser data.", "모든 운동 기록 삭제": "Delete all workout logs", "무게 단위": "Weight unit", "볼륨 vs 지난주": "Volume vs last week", "분": "min", "불러올 수 있는 다른 날짜의 기록이 없습니다.": "No logs from other dates to load.", "비어 있어요": "Nothing here", "세트": "Set", "세트 번호를 누를 때마다 아래 순서로 바뀌어요.": "Tap the set number to cycle through these.", "세트 추가": "Add set", "세트를 완료 체크한 기록이 쌓이면 통계가 표시됩니다.": "Stats appear once you have checked off completed sets.", "손상된 원본 데이터 내보내기": "Export corrupted original data", "시작": "Start", "완료": "Done", "완료 체크한 세트가 없어요.": "No completed sets yet.", "운동": "Workout", "운동 결과 보기": "View results", "이전 기록": "Previous", "종목 선택": "Select exercise", "종목 추가": "Add exercise", "주 시작 요일": "Week starts on", "중지": "Stop", "첫 기록 대비": "vs first log", "초": "sec", "초기화": "Reset", "최근 3회 동안 최고 기록을 넘지 못했어요. 횟수를 바꾸거나 디로드(무게 10% 감소) 후 다시 올려보세요.": "No new best in the last 3 sessions. Try changing reps, or deload (-10% weight) and build back up.", "최근 기록": "Recent logs", "추가": "Add", "추가됨": "Added", "추정 1RM": "Est. 1RM", "취소": "Cancel", "한 번 더 누르면 일반 세트로 돌아가요.": "Tap once more to return to a normal set.", "화면 모드": "Theme", "횟수": "Reps", "운동 결과": "Workout results", "총 볼륨": "Total volume", "🎯 오늘 목표": "🎯 Target today", "· 볼륨": "· Vol", "이번 주 리포트": "Weekly report", "주간 총 볼륨 (최근 8주)": "Weekly total volume (last 8 wks)", "최근 추정 1RM": "Latest est. 1RM", "과부하 성공률": "Overload success rate", "추정 1RM 추이": "Est. 1RM trend", "세션 볼륨": "Session volume", "주간 볼륨": "Weekly volume", "{0}종목": "{0} exercises", "{0}분": "{0} min", "{0}회": "{0} reps", "{0}개": "{0}", "{0}세트": "{0} sets", "기록 {0}일": "{0} days logged", "{0} 설명": "About {0}", "지난번": "Last", "유산소": "Cardio", "무게": "Weight", "최근 20회": "last 20", "변환": "Convert", "같은 이름의 운동 기준 과부하 🔥 성공 {0}/{1}회": "Overload 🔥 successes (same workout name): {0}/{1}", "기존 기록의 무게를 모두 {0}로 변환할까요?": "Convert all existing weights to {0}?", "기록을 삭제했어요": "Log deleted", "다크": "Dark", "라이트": "Light", "달력": "Calendar", "통계": "Stats", "확인": "OK", "삭제": "Delete", "시간 종료!": "Time is up!", "휴식 타이머": "Rest timer", "휴식 끝! 다음 세트 가세요 💪": "Rest over! Next set 💪", "월요일": "Monday", "일요일": "Sunday", "일": "Su", "월": "Mo", "화": "Tu", "수": "We", "목": "Th", "금": "Fr", "토": "Sa", "둘 중 하나만 늘어도 성공으로 세요.": "Counts as a success if either one goes up.", "모든 기록을 삭제했어요": "All logs deleted", "모든 운동 기록을 삭제할까요? 되돌릴 수 없습니다.": "Delete all workout logs? This cannot be undone.", "무게 × (1 + 횟수 ÷ 30) 공식을 쓰고, 웜업 세트는 제외해요.": "Uses weight × (1 + reps ÷ 30); warm-up sets are excluded.", "백업으로 덮어썼어요": "Replaced with backup", "볼륨: 완료한 세트의 무게 × 횟수 합계예요. 웜업은 제외하고, 지난주와 비교한 증감이에요.": "Volume: total of weight × reps for completed sets, excluding warm-ups, compared with last week.", "비교할 기록이 2회 이상 필요합니다.": "Need at least 2 sessions to compare.", "세트를 삭제했어요": "Set deleted", "올바른 백업 파일이 아닙니다.": "Not a valid backup file.", "완료 세트": "Sets done", "완료한 세트의 무게 × 횟수 합계예요. 웜업은 제외해요.": "Total of weight × reps for completed sets. Warm-ups excluded.", "운동 종목": "Exercises", "운동: 볼륨이 기록된 날 수예요.": "Workouts: days with volume logged.", "이 날짜의 기록을 삭제할까요?": "Delete this day's log?", "이전 기록 없음": "No previous log", "일부 세션에서만 증가했어요. 무게나 횟수를 조금씩 올려보세요.": "Improved in only some sessions. Try small bumps in weight or reps.", "저장된 데이터를 읽지 못해 원본을 따로 보관했어요. 설정 화면에서 내보낼 수 있어요.": "Could not read saved data, so the original was set aside. You can export it from Settings.", "점진적 과부하가 잘 이루어지고 있어요.": "Progressive overload is going well.", "정체 구간이에요. 휴식, 영양, 증량 폭을 점검해보세요.": "You are plateauing. Check rest, nutrition, and your increment size.", "종목을 삭제했어요": "Exercise deleted", "직전 세션보다 추정 1RM 또는 볼륨이 늘어난 세션의 비율이에요.": "Share of sessions where est. 1RM or volume beat the previous session.", "한 번에 들 수 있는 최대 무게를 세트 기록으로 추정한 값이에요.": "Estimate of the max weight you could lift once, based on your set logs.", "현재 기록을 불러온 기록으로 바꿀까요?": "Replace the current log with the loaded one?", "현재 데이터를 백업 파일로 덮어쓸까요?": "Overwrite current data with the backup file?", "🔥는 같은 루틴 이름으로 직전보다 볼륨이 늘어난 날이에요. 아래 숫자는 그 성공 횟수예요.": "🔥 marks days when volume beat the previous day with the same workout name. The count below is the number of successes.", "12회가 넘는 고반복에서는 오차가 커져요.": "Error grows for sets above 12 reps.", "PR: 이번 주에 이전 기록보다 추정 1RM이 높았던 종목 수예요.": "PR: exercises with a higher est. 1RM than before, this week.", "가슴": "Chest", "등": "Back", "어깨": "Shoulders", "하체": "Legs", "이두": "Biceps", "삼두": "Triceps", "복근": "Abs", "최근": "Recent", "전체": "All"};
+const EN = {"꾸준함":"Consistency","{0}주":"{0} wk","연속 기록":"Streak","주 평균 (최근 4주)":"Weekly avg (last 4 wks)","최장 연속":"Longest streak","운동을 기록한 주가 끊기지 않고 이어진 횟수예요. 이번 주 첫 운동 전이면 지난주부터 세요.":"Weeks in a row with at least one workout. If you haven't trained yet this week, counting starts from last week.","부위별 볼륨 비율":"Volume by body part","이 기간에 기록이 없어요":"No logs in this period","1개월":"1M","3개월":"3M","주간 총 볼륨":"Weekly total volume","🏆 PR 기록":"🏆 PRs","최근 PR":"Recent PRs","종목별 최고":"Best by exercise","아직 PR이 없어요. 같은 종목을 두 번 이상 기록하면 갱신 기록이 쌓여요.":"No PRs yet. Log the same exercise a few times and new bests will show up here.","Pro로 업그레이드":"Upgrade to Pro","업그레이드":"Upgrade","나중에":"Later","심화 통계: 부위별 볼륨 비율, 꾸준함, PR 기록":"Advanced stats: volume by body part, consistency, PR log","루틴 무제한 (무료는 {0}개까지)":"Unlimited routines (free: up to {0})","기록, 타이머, 불러오기, 기본 통계는 계속 무료예요.":"Logging, timer, loading and basic stats stay free.","무료 루틴 {0}개를 모두 사용했어요. 같은 이름으로 덮어쓰거나 Pro로 업그레이드하세요.":"You've used all {0} free routines. Overwrite one by name or upgrade to Pro.","기타":"Other","요약":"Summary","종목별":"By exercise","볼륨":"Volume","최고 {0}":"Best {0}","최근 10회":"last 10","📊 기록을 쌓는 중이에요":"📊 Building history","🔥 잘 늘고 있어요":"🔥 Growing well","📈 들쭉날쭉해요":"📈 Up and down","⚠️ 정체 구간이에요":"⚠️ Plateau","지난번보다 늘어난 세션 {0}/{1}회":"Sessions that beat the previous one: {0}/{1}","지난 세션보다 추정 1RM이나 볼륨이 늘면 성공으로 세요.":"A session counts when est. 1RM or volume beats the previous one.","추정 최대 무게 (1RM)":"Est. max weight (1RM)","추정 1RM = 무게 × (1 + 횟수 ÷ 30), 웜업 제외. 12회가 넘는 세트는 오차가 커요.":"Est. 1RM = weight × (1 + reps ÷ 30), warm-ups excluded. Error grows above 12 reps.","볼륨 = 완료한 세트의 무게 × 횟수 합계(웜업 제외) · PR = 이번 주에 최고 기록을 넘은 종목 수":"Volume = total weight × reps of completed sets (warm-ups excluded) · PR = exercises that beat their best this week","🔥 달력 표시: 같은 이름의 운동에서 직전보다 볼륨이 늘어난 날":"🔥 on calendar: day when volume beat the previous day with the same workout name","바꾸기":"Replace","현재 종목을 이 루틴으로 바꿀까요?":"Replace current exercises with this routine?","현재 운동을 루틴으로 저장":"Save current workout as routine","불러오기":"Load","루틴":"Routines","지난 기록":"Past logs","루틴으로 저장":"Save as routine","루틴 이름 (예: 상체 A)":"Routine name (e.g. Upper A)","종목과 세트 구성만 저장돼요. 무게와 횟수는 지난 기록에서 채워져요.":"Only exercises and set layout are saved. Weight and reps are filled from your last logs.","저장":"Save","루틴을 저장했어요":"Routine saved","루틴을 삭제했어요":"Routine deleted","이 루틴을 삭제할까요?":"Delete this routine?","저장된 루틴이 없어요. 종목을 추가한 뒤 여기서 '현재 운동을 루틴으로 저장'을 눌러 만들어 보세요.":"No routines yet. Add exercises, then tap 'Save current workout as routine' here.","휴식 끝!":"Rest over!","다음 세트 가세요 💪":"Next set 💪","휴식 중":"Resting","종료 시각 {0}":"Ends at {0}","검색 또는 직접 입력": "Search or type a name", "기록 삭제": "Delete log", "날짜별 불러오기": "Load from date", "다음 달": "Next month", "닫기": "Close", "설정": "Settings", "세트 삭제": "Delete set", "세트 표시 안내": "Set markers", "아래로": "Move down", "운동 이름 (예: 상체 A)": "Workout name (e.g. Upper A)", "위로": "Move up", "이전 달": "Previous month", "종목 삭제": "Delete exercise", "즐겨찾기": "Favorite", "증량 폭": "Increment", "타이머 설정": "Timer settings", "화면 꺼짐 방지": "Keep screen on", "휴식 시간(초)": "Rest time (sec)", "드롭 세트": "Drop set", "실패 세트": "Failure set", "웜업 · 볼륨에서 제외": "Warm-up · excluded from volume", "12회 이상 달성하면 목표 무게를 이만큼 올려요": "Target weight goes up by this much after 12+ reps", "JSON 가져오기": "Import JSON", "JSON으로 내보내기": "Export JSON", "⚠️ 정체 감지": "⚠️ Plateau detected", "과부하 로그": "Overload Log", "기록 화면을 열어둔 동안 화면이 꺼지지 않아요": "Screen stays on while a log is open", "기록한 세션": "Sessions logged", "되돌리기": "Undo", "모든 데이터는 이 브라우저에만 저장됩니다. 기기를 바꾸거나 브라우저 데이터를 지우기 전에 백업하세요.": "All data is stored only in this browser. Back up before switching devices or clearing browser data.", "모든 운동 기록 삭제": "Delete all workout logs", "무게 단위": "Weight unit", "볼륨 vs 지난주": "Volume vs last week", "분": "min", "불러올 수 있는 다른 날짜의 기록이 없습니다.": "No logs from other dates to load.", "비어 있어요": "Nothing here", "세트": "Set", "세트 번호를 누를 때마다 아래 순서로 바뀌어요.": "Tap the set number to cycle through these.", "세트 추가": "Add set", "세트를 완료 체크한 기록이 쌓이면 통계가 표시됩니다.": "Stats appear once you have checked off completed sets.", "손상된 원본 데이터 내보내기": "Export corrupted original data", "시작": "Start", "완료": "Done", "완료 체크한 세트가 없어요.": "No completed sets yet.", "운동": "Workout", "운동 결과 보기": "View results", "이전 기록": "Previous", "종목 선택": "Select exercise", "종목 추가": "Add exercise", "주 시작 요일": "Week starts on", "중지": "Stop", "첫 기록 대비": "vs first log", "초": "sec", "초기화": "Reset", "최근 3회 동안 최고 기록을 넘지 못했어요. 횟수를 바꾸거나 디로드(무게 10% 감소) 후 다시 올려보세요.": "No new best in the last 3 sessions. Try changing reps, or deload (-10% weight) and build back up.", "최근 기록": "Recent logs", "추가": "Add", "추가됨": "Added", "추정 1RM": "Est. 1RM", "취소": "Cancel", "한 번 더 누르면 일반 세트로 돌아가요.": "Tap once more to return to a normal set.", "화면 모드": "Theme", "횟수": "Reps", "운동 결과": "Workout results", "총 볼륨": "Total volume", "🎯 오늘 목표": "🎯 Target today", "· 볼륨": "· Vol", "이번 주 리포트": "Weekly report", "주간 총 볼륨 (최근 8주)": "Weekly total volume (last 8 wks)", "최근 추정 1RM": "Latest est. 1RM", "과부하 성공률": "Overload success rate", "추정 1RM 추이": "Est. 1RM trend", "세션 볼륨": "Session volume", "주간 볼륨": "Weekly volume", "{0}종목": "{0} exercises", "{0}분": "{0} min", "{0}회": "{0} reps", "{0}개": "{0}", "{0}세트": "{0} sets", "기록 {0}일": "{0} days logged", "{0} 설명": "About {0}", "지난번": "Last", "유산소": "Cardio", "무게": "Weight", "최근 20회": "last 20", "변환": "Convert", "같은 이름의 운동 기준 과부하 🔥 성공 {0}/{1}회": "Overload 🔥 successes (same workout name): {0}/{1}", "기존 기록의 무게를 모두 {0}로 변환할까요?": "Convert all existing weights to {0}?", "기록을 삭제했어요": "Log deleted", "다크": "Dark", "라이트": "Light", "달력": "Calendar", "통계": "Stats", "확인": "OK", "삭제": "Delete", "시간 종료!": "Time is up!", "휴식 타이머": "Rest timer", "휴식 끝! 다음 세트 가세요 💪": "Rest over! Next set 💪", "월요일": "Monday", "일요일": "Sunday", "일": "Su", "월": "Mo", "화": "Tu", "수": "We", "목": "Th", "금": "Fr", "토": "Sa", "둘 중 하나만 늘어도 성공으로 세요.": "Counts as a success if either one goes up.", "모든 기록을 삭제했어요": "All logs deleted", "모든 운동 기록을 삭제할까요? 되돌릴 수 없습니다.": "Delete all workout logs? This cannot be undone.", "무게 × (1 + 횟수 ÷ 30) 공식을 쓰고, 웜업 세트는 제외해요.": "Uses weight × (1 + reps ÷ 30); warm-up sets are excluded.", "백업으로 덮어썼어요": "Replaced with backup", "볼륨: 완료한 세트의 무게 × 횟수 합계예요. 웜업은 제외하고, 지난주와 비교한 증감이에요.": "Volume: total of weight × reps for completed sets, excluding warm-ups, compared with last week.", "비교할 기록이 2회 이상 필요합니다.": "Need at least 2 sessions to compare.", "세트를 삭제했어요": "Set deleted", "올바른 백업 파일이 아닙니다.": "Not a valid backup file.", "완료 세트": "Sets done", "완료한 세트의 무게 × 횟수 합계예요. 웜업은 제외해요.": "Total of weight × reps for completed sets. Warm-ups excluded.", "운동 종목": "Exercises", "운동: 볼륨이 기록된 날 수예요.": "Workouts: days with volume logged.", "이 날짜의 기록을 삭제할까요?": "Delete this day's log?", "이전 기록 없음": "No previous log", "일부 세션에서만 증가했어요. 무게나 횟수를 조금씩 올려보세요.": "Improved in only some sessions. Try small bumps in weight or reps.", "저장된 데이터를 읽지 못해 원본을 따로 보관했어요. 설정 화면에서 내보낼 수 있어요.": "Could not read saved data, so the original was set aside. You can export it from Settings.", "점진적 과부하가 잘 이루어지고 있어요.": "Progressive overload is going well.", "정체 구간이에요. 휴식, 영양, 증량 폭을 점검해보세요.": "You are plateauing. Check rest, nutrition, and your increment size.", "종목을 삭제했어요": "Exercise deleted", "직전 세션보다 추정 1RM 또는 볼륨이 늘어난 세션의 비율이에요.": "Share of sessions where est. 1RM or volume beat the previous session.", "한 번에 들 수 있는 최대 무게를 세트 기록으로 추정한 값이에요.": "Estimate of the max weight you could lift once, based on your set logs.", "현재 기록을 불러온 기록으로 바꿀까요?": "Replace the current log with the loaded one?", "현재 데이터를 백업 파일로 덮어쓸까요?": "Overwrite current data with the backup file?", "🔥는 같은 루틴 이름으로 직전보다 볼륨이 늘어난 날이에요. 아래 숫자는 그 성공 횟수예요.": "🔥 marks days when volume beat the previous day with the same workout name. The count below is the number of successes.", "12회가 넘는 고반복에서는 오차가 커져요.": "Error grows for sets above 12 reps.", "PR: 이번 주에 이전 기록보다 추정 1RM이 높았던 종목 수예요.": "PR: exercises with a higher est. 1RM than before, this week.", "가슴": "Chest", "등": "Back", "어깨": "Shoulders", "하체": "Legs", "이두": "Biceps", "삼두": "Triceps", "복근": "Abs", "최근": "Recent", "전체": "All"};
 const EXS = {"가슴": "Barbell Bench Press|Incline Barbell Bench Press|Decline Barbell Bench Press|Wide-Grip Bench Press|Dumbbell Bench Press|Incline Dumbbell Bench Press|Decline Dumbbell Bench Press|Smith Machine Bench Press|Smith Machine Incline Press|Smith Machine Decline Press|Chest Press Machine|Incline Chest Press Machine|Hammer Strength Chest Press|Cable Chest Press|Floor Press|Dumbbell Squeeze Press|Landmine Press|Dumbbell Fly|Incline Dumbbell Fly|Cable Crossover|Low Cable Crossover|High Cable Crossover|Incline Cable Fly|Pec Deck Fly|Machine Fly|Push-Up|Decline Push-Up|Weighted Push-Up|Chest Dips|Assisted Dips", "등": "Deadlift|Conventional Deadlift|Sumo Deadlift|Trap Bar Deadlift|Rack Pull|Block Pull|Pull-Up|Chin-Up|Wide-Grip Pull-Up|Narrow-Grip Pull-Up|Assisted Pull-Up|Lat Pulldown|Close-Grip Lat Pulldown|Underhand Lat Pulldown|One-Arm Lat Pulldown|Barbell Row|Pendlay Row|Underhand Barbell Row|One-Arm Dumbbell Row|Meadows Row|T-Bar Row|Seated Cable Row|Seated Wide Row|One-Arm Cable Row|Machine Row|High Row Machine|Low Row Machine|Chest-Supported Row|Inverted Row|Seal Row|Straight-Arm Pulldown|Cable Pullover|Dumbbell Pullover|Face Pull|Back Extension|Hyperextension|Reverse Hyper|Shrug|Smith Machine Shrug", "어깨": "Overhead Press (Barbell)|Military Press|Push Press|Seated Barbell Press|Dumbbell Shoulder Press|Arnold Press|Smith Machine Shoulder Press|Shoulder Press Machine|Landmine Shoulder Press|Handstand Push-Up|Side Lateral Raise|Cable Side Lateral Raise|One-Arm Cable Lateral Raise|Machine Lateral Raise|Leaning Lateral Raise|Front Raise|Cable Front Raise|Plate Front Raise|Bent-Over Rear Delt Raise|Reverse Pec Deck|Cable Rear Delt Fly|Dumbbell Rear Delt Row|Cable Face Pull|Upright Row|Barbell Shrug|Dumbbell Shrug|Cable External Rotation|Scaption", "하체": "Barbell Back Squat|High-Bar Squat|Low-Bar Squat|Front Squat|Overhead Squat|Box Squat|Smith Machine Squat|Machine Squat|Hack Squat|Belt Squat|Goblet Squat|Sumo Squat|Bulgarian Split Squat|Split Squat|Sissy Squat|Pistol Squat|Leg Press|45° Leg Press|Single-Leg Press|Leg Extension|Lying Leg Curl|Seated Leg Curl|Standing Leg Curl|Nordic Hamstring Curl|Glute-Ham Raise|Romanian Deadlift|Dumbbell Romanian Deadlift|Single-Leg Romanian Deadlift|Stiff-Leg Deadlift|Good Morning|Walking Lunge|Dumbbell Lunge|Barbell Lunge|Reverse Lunge|Lateral Lunge|Curtsy Lunge|Step-Up|Dumbbell Step-Up|Hip Thrust|Barbell Hip Thrust|Machine Hip Thrust|Glute Bridge|Cable Pull-Through|Cable Kickback|Hip Abduction Machine|Hip Adduction Machine|Box Jump|Standing Calf Raise|Seated Calf Raise|Leg Press Calf Raise|Donkey Calf Raise|Single-Leg Calf Raise|Tibialis Raise", "이두": "Barbell Curl|Wide-Grip Barbell Curl|Close-Grip Barbell Curl|EZ-Bar Curl|Dumbbell Curl|Alternating Dumbbell Curl|Seated Dumbbell Curl|Hammer Curl|Cross-Body Hammer Curl|Cable Rope Hammer Curl|Incline Dumbbell Curl|Preacher Curl|Dumbbell Preacher Curl|Cable Preacher Curl|Machine Preacher Curl|Concentration Curl|Cable Curl|One-Arm Cable Curl|High Cable Curl|Spider Curl|Drag Curl|Zottman Curl|Biceps Curl Machine|Reverse Curl|Wrist Curl", "삼두": "Close-Grip Bench Press|Smith Machine Close-Grip Bench Press|JM Press|Tate Press|Lying Triceps Extension (Skull Crusher)|Lying Dumbbell Triceps Extension|Dumbbell Overhead Extension|EZ-Bar Overhead Extension|Cable Overhead Extension|Cable Pushdown (Bar)|Cable Pushdown (Rope)|V-Bar Pushdown|Reverse-Grip Pushdown|One-Arm Cable Pushdown|One-Arm Reverse Pushdown|Machine Triceps Extension|Triceps Dips|Bench Dips|Machine Dips|Dumbbell Kickback|Cable Kickback (Triceps)|Diamond Push-Up|Close-Grip Push-Up", "복근": "Crunch|Reverse Crunch|Bicycle Crunch|Oblique Crunch|Cable Crunch|Machine Crunch|Stability Ball Crunch|Sit-Up|Decline Sit-Up|V-Up|Hanging Leg Raise|Hanging Knee Raise|Toes-to-Bar|Captain's Chair Leg Raise|Lying Leg Raise|Flutter Kick|Heel Touch|Toe Touch|Plank|Side Plank|Reverse Plank|Hollow Body Hold|Ab Wheel Rollout|Pallof Press|Cable Wood Chop|Russian Twist|Dumbbell Side Bend|Dead Bug|Mountain Climber|Dragon Flag", "유산소": "Treadmill Walk|Incline Treadmill Walk|Treadmill Run|Treadmill Intervals|Outdoor Run|Jogging|Power Walking|Walking|Hiking|Cycling (Indoor Bike)|Spinning|Cycling (Outdoor)|Air Bike|Elliptical|Stair Mill|Stair Climbing|Rowing Machine|SkiErg|Jump Rope|Swimming|Battle Ropes|Burpees|Jumping Jacks|High Knees|Mountain Climbers (Cardio)|Boxing Bag|Kickboxing|Aerobics|Dance|HIIT|Tabata|Circuit Training"};
 const EXN = {};
 Object.keys(EXS).forEach(k => EXS[k].split("|").forEach((n, i) => { EXN[EX[k][i]] = n; }));
@@ -85,6 +88,8 @@ const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-$
 let U = "kg";
 let INC = { kg: 2.5, lb: 5 };
 const nk = s => String(s).replace(/\s+/g, "").toLowerCase();
+const PARTS = ["가슴", "등", "어깨", "하체", "이두", "삼두", "복근", "기타"];
+const PART = {}; Object.keys(EX).forEach(c => EX[c].forEach(n => { PART[nk(n)] = c; }));
 const sanitize = logs => {
   if (!logs || typeof logs !== "object" || Array.isArray(logs)) return null;
   const out = {};
@@ -99,8 +104,10 @@ const sanitize = logs => {
   }
   return out;
 };
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const sanR = a => Array.isArray(a) ? a.filter(r => r && typeof r === "object" && typeof r.name === "string" && Array.isArray(r.exercises)).slice(0, 100).map(r => ({ id: typeof r.id === "string" && r.id ? r.id : uid(), name: r.name.slice(0, 30), exercises: r.exercises.filter(e => e && typeof e.name === "string").slice(0, 40).map(e => ({ name: e.name, ...(e.cardio ? { cardio: true } : {}), sets: e.cardio ? [""] : (Array.isArray(e.sets) && e.sets.length ? e.sets.slice(0, 30).map(t => ["w", "d", "f"].includes(t) ? t : "") : [""]) })) })) : [];
 const incOk = v => typeof v === "number" && isFinite(v) && v > 0 && v <= 100;
-const meta = d => ({ unit: d && d.unit === "lb" ? "lb" : "kg", wake: !(d && d.wake === false), theme: d && d.theme === "light" ? "light" : "dark", weekStart: d && d.weekStart === 1 ? 1 : 0, lang: d && (d.lang === "ko" || d.lang === "en") ? d.lang : (navigator.language || "").toLowerCase().startsWith("ko") ? "ko" : "en", inc: { kg: d && d.inc && incOk(d.inc.kg) ? d.inc.kg : 2.5, lb: d && d.inc && incOk(d.inc.lb) ? d.inc.lb : 5 }, fav: d && Array.isArray(d.fav) ? d.fav.filter(x => typeof x === "string") : [], recent: d && Array.isArray(d.recent) ? d.recent.filter(x => typeof x === "string").slice(0, 15) : [] });
+const meta = d => ({ unit: d && d.unit === "lb" ? "lb" : "kg", wake: !(d && d.wake === false), theme: d && d.theme === "light" ? "light" : "dark", weekStart: d && d.weekStart === 1 ? 1 : 0, lang: d && (d.lang === "ko" || d.lang === "en") ? d.lang : (navigator.language || "").toLowerCase().startsWith("ko") ? "ko" : "en", inc: { kg: d && d.inc && incOk(d.inc.kg) ? d.inc.kg : 2.5, lb: d && d.inc && incOk(d.inc.lb) ? d.inc.lb : 5 }, routines: sanR(d && d.routines), fav: d && Array.isArray(d.fav) ? d.fav.filter(x => typeof x === "string") : [], recent: d && Array.isArray(d.recent) ? d.recent.filter(x => typeof x === "string").slice(0, 15) : [] });
 const BK = "overload-log-corrupt-backup";
 let LOAD_BAD = false;
 const load = () => { let bad = null, res = null; for (const k of [KEY, "overload-log-v1"]) { let raw = null; try { raw = localStorage.getItem(k); } catch (e) {} if (!raw) continue; try { const d = JSON.parse(raw); const lg = d && sanitize(d.logs); if (lg) { res = { routines: [], logs: lg, ...meta(d) }; break; } } catch (e) {} bad = bad || raw; } if (bad) { LOAD_BAD = true; try { if (!localStorage.getItem(BK)) localStorage.setItem(BK, bad); } catch (e) {} } return res || { routines: [], logs: {}, ...meta(null) }; };
@@ -202,6 +209,21 @@ function Timer({ kick }) {
   );
 }
 
+function ProSheet({ onClose, onBuy }) {
+  return (
+    <div className="fixed inset-0 z-[80] bg-black/70 grid place-items-center p-6" onClick={onClose}>
+      <div className="w-full max-w-sm bg-zinc-900 rounded-2xl p-5" onClick={e => e.stopPropagation()}>
+        <div className="text-lg font-bold">{tr("Pro로 업그레이드")}</div>
+        <div className="mt-3 space-y-2 text-sm">
+          <div className="flex gap-2"><span>📊</span><span>{tr("심화 통계: 부위별 볼륨 비율, 꾸준함, PR 기록")}</span></div>
+          <div className="flex gap-2"><span>📁</span><span>{tr("루틴 무제한 (무료는 {0}개까지)", FREE_ROUTINES)}</span></div>
+        </div>
+        <div className="text-xs text-zinc-500 mt-3">{tr("기록, 타이머, 불러오기, 기본 통계는 계속 무료예요.")}</div>
+        <div className="flex gap-2 mt-4"><button onClick={onClose} className="flex-1 py-2.5 rounded-xl bg-zinc-800">{tr("나중에")}</button><button onClick={onBuy} className="flex-1 py-2.5 rounded-xl font-semibold bg-amber-500 text-black">{tr("업그레이드")}</button></div>
+      </div>
+    </div>
+  );
+}
 function Confirm({ ask, close }) {
   return (
     <div className="fixed inset-0 z-[60] bg-black/70 grid place-items-center p-6" onClick={close}>
@@ -239,9 +261,11 @@ function Summary({ date, log, logs, onClose }) {
   );
 }
 
-function Day({ date, data, setData, onClose, mark }) {
+function Day({ date, data, setData, onClose, mark, pro, upgrade }) {
   const log = data.logs[date] || { routine: "", mood: 0, memo: "", exercises: [] };
   const [pick, setPick] = useState(false);
+  const [pt, setPt] = useState("r");
+  const [saveR, setSaveR] = useState(null);
   const [ask, setAsk] = useState(null);
   const [lastCat, setLastCat] = useState("가슴");
   const [showEx, setShowEx] = useState(false);
@@ -253,8 +277,12 @@ function Day({ date, data, setData, onClose, mark }) {
   const addEx = (name, cardio) => { const p = prevEx(data.logs, date, name); save(l => l.exercises.push(cardio ? { name, cardio: true, sets: [{ min: p && p[0].min ? p[0].min : "", done: false }] } : { name, sets: [{ w: p ? p[0].w : "", r: p ? p[0].r : "", done: false }] })); setData(d => ({ ...d, recent: [name, ...(d.recent || []).filter(x => x !== name)].slice(0, 15) })); };
   const save = fn => setData(d => { const l = JSON.parse(JSON.stringify(d.logs[date] || { routine: "", mood: 0, memo: "", exercises: [] })); fn(l); return { ...d, logs: { ...d.logs, [date]: l } }; });
   const close = () => { if (!log.exercises.length && !log.memo && !log.mood && !(log.routine || "").trim()) setData(d => { const logs = { ...d.logs }; delete logs[date]; return { ...d, logs }; }); onClose(); };
-  const loadDate = (d, force) => { if (log.exercises.length && !force) { setAsk({ msg: tr("현재 기록을 불러온 기록으로 바꿀까요?"), fn: () => loadDate(d, true) }); return; } const src = data.logs[d]; save(l => { l.routine = l.routine || src.routine; l.exercises = src.exercises.map(e => ({ name: e.name, ...(e.cardio ? { cardio: true } : {}), sets: e.sets.map(s => ({ ...s, done: false })) })); }); setPick(false); };
+  const loadDate = (d, force) => { if (log.exercises.length && !force) { setAsk({ msg: tr("현재 기록을 불러온 기록으로 바꿀까요?"), ok: tr("바꾸기"), fn: () => loadDate(d, true) }); return; } const src = data.logs[d]; save(l => { l.routine = l.routine || src.routine; l.exercises = src.exercises.map(e => ({ name: e.name, ...(e.cardio ? { cardio: true } : {}), sets: e.sets.map(s => ({ ...s, done: false })) })); }); setPick(false); };
   const pastDates = Object.keys(data.logs).filter(d => d !== date && data.logs[d].exercises.length).sort().reverse();
+  const routines = data.routines || [];
+  const loadRoutine = (r, force) => { if (log.exercises.length && !force) { setAsk({ msg: tr("현재 종목을 이 루틴으로 바꿀까요?"), ok: tr("바꾸기"), fn: () => loadRoutine(r, true) }); return; } save(l => { l.routine = l.routine || r.name; l.exercises = r.exercises.map(e => { const p = prevEx(data.logs, date, e.name); if (e.cardio) return { name: e.name, cardio: true, sets: [{ min: p && p[0].min ? p[0].min : "", done: false }] }; let k = 0; return { name: e.name, sets: e.sets.map(t => { if (t === "w") return { w: "", r: "", t: "w", done: false }; const q = p ? p[Math.min(k++, p.length - 1)] : null; return { w: q ? q.w : "", r: q ? q.r : "", ...(t ? { t } : {}), done: false }; }) }; }); }); setPick(false); };
+  const saveRoutine = raw => { const name = raw.trim().slice(0, 30); if (!name) return; if (!pro && routines.length >= FREE_ROUTINES && !routines.some(x => nk(x.name) === nk(name))) { setSaveR(null); upgrade(); return; } const exs = log.exercises.map(e => ({ name: e.name, ...(e.cardio ? { cardio: true } : {}), sets: e.cardio ? [""] : e.sets.map(s => s.t || "") })); mark(tr("루틴을 저장했어요")); setData(d => { const list = d.routines || []; const i = list.findIndex(x => nk(x.name) === nk(name)); const item = { id: i >= 0 ? list[i].id : uid(), name, exercises: exs }; return { ...d, routines: i >= 0 ? list.map((x, j) => j === i ? item : x) : [item, ...list] }; }); if (!(log.routine || "").trim()) save(l => { l.routine = name; }); setSaveR(null); };
+  const delRoutine = r => setAsk({ msg: tr("이 루틴을 삭제할까요?"), fn: () => { mark(tr("루틴을 삭제했어요")); setData(d => ({ ...d, routines: (d.routines || []).filter(x => x.id !== r.id) })); } });
   const remove = () => setAsk({ msg: tr("이 날짜의 기록을 삭제할까요?"), fn: () => { mark(tr("기록을 삭제했어요")); setData(d => { const logs = { ...d.logs }; delete logs[date]; return { ...d, logs }; }); onClose(); } });
   return (
     <div className="fixed inset-0 z-40 bg-[#0c0e12] overflow-y-auto" style={{ paddingTop: "env(safe-area-inset-top,0px)" }}>
@@ -263,8 +291,15 @@ function Day({ date, data, setData, onClose, mark }) {
           <div><div className="text-lg font-bold">{date}</div><div className="text-xs text-zinc-400">{tr("총 볼륨")} {fmt(vol(log))}{U} {overload(data.logs, date) && "🔥"}{log.exercises.some(e => prOf(data.logs, date, e)) && "🏆"}{log.exercises.some(e => e.cardio) && ` · ${tr("유산소")} ${tr("{0}분", log.exercises.filter(e => e.cardio).reduce((t, e) => t + (e.sets[0].done ? +e.sets[0].min || 0 : 0), 0))}`}</div></div>
           <div className="flex gap-2"><button aria-label={tr("기록 삭제")} title={tr("기록 삭제")} onClick={remove} className="p-2 rounded-lg bg-zinc-800 text-red-400"><Icon n="trash" /></button><button aria-label={tr("닫기")} onClick={close} className="p-2 rounded-lg bg-zinc-800"><Icon n="x" /></button></div>
         </div>
-        <div className="mt-3 flex gap-2 items-stretch"><input style={{ textAlign: "left", padding: 10 }} placeholder={tr("운동 이름 (예: 상체 A)")} value={log.routine} onChange={e => save(l => { l.routine = e.target.value; })} /><button aria-label={tr("날짜별 불러오기")} title={tr("날짜별 불러오기")} onClick={() => setPick(!pick)} className="shrink-0 flex items-center justify-center px-3 rounded-lg bg-zinc-800 text-zinc-300"><Icon n="load" /></button></div>
-        {pick && <div className="fixed inset-0 z-50 bg-black/70 flex items-end" onClick={() => setPick(false)}><div className="w-full max-w-xl mx-auto bg-zinc-900 rounded-t-3xl max-h-[70vh] flex flex-col overflow-hidden" style={{ paddingBottom: "env(safe-area-inset-bottom,0px)" }} onClick={e => e.stopPropagation()}><div className="shrink-0 flex items-center justify-between p-4 pb-2"><div className="font-bold">{tr("날짜별 불러오기")}</div><button aria-label={tr("닫기")} onClick={() => setPick(false)}><Icon n="x" /></button></div><div className="flex-1 min-h-0 overflow-y-auto px-4 pb-2 divide-y divide-zinc-800 border-t border-zinc-800">{pastDates.length ? pastDates.map(d => <button key={d} onClick={() => loadDate(d)} className="w-full text-left py-3 flex justify-between items-center gap-3"><span>{d} <span className="text-amber-400 text-sm">{data.logs[d].routine}</span></span><span className="text-xs text-zinc-500 shrink-0">{tr("{0}종목", data.logs[d].exercises.length)} · {fmt(vol(data.logs[d]))}{U}</span></button>) : <div className="py-6 text-center text-sm text-zinc-400">{tr("불러올 수 있는 다른 날짜의 기록이 없습니다.")}</div>}</div></div></div>}
+        <div className="mt-3 flex gap-2 items-stretch"><input style={{ textAlign: "left", padding: 10 }} placeholder={tr("운동 이름 (예: 상체 A)")} value={log.routine} onChange={e => save(l => { l.routine = e.target.value; })} /><button aria-label={tr("불러오기")} title={tr("불러오기")} onClick={() => { setPt("r"); setPick(!pick); }} className="shrink-0 flex items-center justify-center px-3 rounded-lg bg-zinc-800 text-zinc-300"><Icon n="load" /></button></div>
+        {pick && <div className="fixed inset-0 z-50 bg-black/70 flex items-end" onClick={() => setPick(false)}><div className="w-full max-w-xl mx-auto bg-zinc-900 rounded-t-3xl max-h-[70vh] flex flex-col overflow-hidden" style={{ paddingBottom: "env(safe-area-inset-bottom,0px)" }} onClick={e => e.stopPropagation()}>
+          <div className="shrink-0 flex items-center justify-between p-4 pb-2"><div className="font-bold">{tr("불러오기")}</div><button aria-label={tr("닫기")} onClick={() => setPick(false)}><Icon n="x" /></button></div>
+          <div className="shrink-0 px-4 pb-3 grid grid-cols-2 gap-2">{[["r", "루틴"], ["d", "지난 기록"]].map(([k, t]) => <button key={k} onClick={() => setPt(k)} className={`py-2 rounded-lg text-sm font-semibold ${pt === k ? "bg-amber-500 text-black" : "bg-zinc-800 text-zinc-300"}`}>{tr(t)}</button>)}</div>
+          {pt === "r" && log.exercises.length > 0 && <div className="shrink-0 px-4 pb-3"><button onClick={() => setSaveR(log.routine || "")} className="w-full py-2.5 rounded-xl bg-zinc-800 text-amber-400 text-sm font-semibold flex items-center justify-center gap-1.5"><Icon n="plus" s={16} />{tr("현재 운동을 루틴으로 저장")}{!pro && <span className="text-xs text-zinc-500 font-normal ml-1.5">{routines.length}/{FREE_ROUTINES}</span>}</button></div>}
+          <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-2 divide-y divide-zinc-800 border-t border-zinc-800">
+            {pt === "r" ? (routines.length ? routines.map(r => <div key={r.id} className="flex items-center gap-2 py-3"><button onClick={() => loadRoutine(r)} className="flex-1 min-w-0 text-left"><div className="text-amber-400 font-semibold truncate">{r.name}</div><div className="text-xs text-zinc-500 truncate">{r.exercises.map(e => tn(e.name)).join(" · ")} · {tr("{0}종목", r.exercises.length)}</div></button><button aria-label={tr("삭제")} title={tr("삭제")} onClick={() => delRoutine(r)} className="shrink-0 p-2 text-red-400"><Icon n="trash" s={16} /></button></div>) : <div className="py-6 text-center text-sm text-zinc-400">{tr("저장된 루틴이 없어요. 종목을 추가한 뒤 여기서 '현재 운동을 루틴으로 저장'을 눌러 만들어 보세요.")}</div>)
+            : (pastDates.length ? pastDates.map(d => <button key={d} onClick={() => loadDate(d)} className="w-full text-left py-3 flex justify-between items-center gap-3"><span>{d} <span className="text-amber-400 text-sm">{data.logs[d].routine}</span></span><span className="text-xs text-zinc-500 shrink-0">{tr("{0}종목", data.logs[d].exercises.length)} · {fmt(vol(data.logs[d]))}{U}</span></button>) : <div className="py-6 text-center text-sm text-zinc-400">{tr("불러올 수 있는 다른 날짜의 기록이 없습니다.")}</div>)}
+          </div></div></div>}
         {log.exercises.map((ex, ei) => {
           const p = prevEx(data.logs, date, ex.name);
           const wIdx = []; let wc = 0; ex.sets.forEach(s => { wIdx.push(wc); if (s.t !== "w") wc++; });
@@ -314,6 +349,7 @@ function Day({ date, data, setData, onClose, mark }) {
         })}
         {showEx && <ExPicker fav={fav} recent={data.recent || []} toggleFav={toggleFav} start={lastCat} added={log.exercises.map(e => e.name)} onClose={() => setShowEx(false)} onPick={(n, c, k) => { addEx(n, c); setLastCat(k); setShowEx(false); }} />}
         <button onClick={() => setShowEx(true)} className={`mt-4 w-full flex items-center justify-center gap-2 rounded-xl font-semibold ${log.exercises.length ? "py-2.5 bg-zinc-800 text-zinc-200" : "py-4 bg-amber-500 text-black"}`}><Icon n="plus" s={18} />{tr("종목 추가")}</button>
+        {saveR !== null && <div className="fixed inset-0 z-[60] bg-black/70 grid place-items-center p-6" onClick={() => setSaveR(null)}><div className="w-full max-w-sm bg-zinc-900 rounded-2xl p-5" onClick={e => e.stopPropagation()}><div className="font-semibold mb-3">{tr("루틴으로 저장")}</div><input autoFocus style={{ textAlign: "left", padding: 10 }} maxLength={30} placeholder={tr("루틴 이름 (예: 상체 A)")} value={saveR} onChange={e => setSaveR(e.target.value)} /><div className="text-xs text-zinc-400 mt-2">{tr("종목과 세트 구성만 저장돼요. 무게와 횟수는 지난 기록에서 채워져요.")}</div>{!pro && routines.length >= FREE_ROUTINES && !routines.some(x => nk(x.name) === nk(saveR)) && <div className="text-xs text-amber-400 mt-2">{tr("무료 루틴 {0}개를 모두 사용했어요. 같은 이름으로 덮어쓰거나 Pro로 업그레이드하세요.", FREE_ROUTINES)}</div>}<div className="flex gap-2 mt-4"><button onClick={() => setSaveR(null)} className="flex-1 py-2.5 rounded-xl bg-zinc-800">{tr("취소")}</button><button disabled={!saveR.trim()} onClick={() => saveRoutine(saveR)} className="flex-1 py-2.5 rounded-xl font-semibold bg-amber-500 text-black disabled:opacity-40">{tr("저장")}</button></div></div></div>}
         {ask && <Confirm ask={ask} close={() => setAsk(null)} />}
         <Timer kick={kick} />
         {log.exercises.some(e => e.cardio ? e.sets[0] && e.sets[0].done : e.sets.some(x => x.done)) && <button onClick={() => setShowRes(true)} className="mt-3 w-full py-2.5 rounded-xl bg-zinc-800 text-zinc-200 text-sm">{tr("운동 결과 보기")}</button>}
@@ -351,7 +387,7 @@ function Calendar({ data, open }) {
   );
 }
 
-function Settings({ data, setData, mark }) {
+function Settings({ data, setData, mark, pro, setPro }) {
   const u = data.unit || "kg", incV = (data.inc && data.inc[u]) || (u === "lb" ? 5 : 2.5), [incTxt, setIncTxt] = useState(String(incV));
   useEffect(() => { setIncTxt(String(incV)); }, [u]);
   const setInc = v => { setIncTxt(String(v)); if (incOk(+v)) setData(p => ({ ...p, inc: { ...(p.inc || { kg: 2.5, lb: 5 }), [u]: +v } })); };
@@ -371,6 +407,7 @@ function Settings({ data, setData, mark }) {
       <div className="rounded-2xl bg-zinc-900 p-4 flex items-center justify-between text-sm"><div>{tr("주 시작 요일")}</div>{seg([[0, tr("일요일")], [1, tr("월요일")]], data.weekStart === 1 ? 1 : 0, "weekStart")}</div>
       <div className="rounded-2xl bg-zinc-900 p-4 flex items-center justify-between text-sm"><div><div>{tr("화면 꺼짐 방지")}</div><div className="text-xs text-zinc-500 mt-0.5">{tr("기록 화면을 열어둔 동안 화면이 꺼지지 않아요")}</div></div><button role="switch" aria-checked={data.wake !== false} aria-label={tr("화면 꺼짐 방지")} onClick={() => setData(p => ({ ...p, wake: p.wake === false }))} className={`w-12 h-7 rounded-full p-0.5 transition-colors shrink-0 ${data.wake !== false ? "bg-amber-500" : "bg-zinc-600"}`}><span className={`block w-6 h-6 rounded-full bg-white shadow transition-transform ${data.wake !== false ? "translate-x-5" : ""}`} /></button></div>
       <div className="rounded-2xl bg-zinc-900 p-4 text-sm"><div className="flex items-center justify-between gap-3"><div><div>{tr("증량 폭")}</div><div className="text-xs text-zinc-500 mt-0.5">{tr("12회 이상 달성하면 목표 무게를 이만큼 올려요")}</div></div><div className="flex items-center gap-1.5 shrink-0 w-24"><input inputMode="decimal" aria-label={tr("증량 폭")} value={incTxt} onChange={e => setInc(e.target.value.replace(/[^0-9.]/g, ""))} onBlur={() => setIncTxt(String(incV))} /><span className="text-xs text-zinc-400">{u}</span></div></div><div className="flex gap-1.5 mt-3">{(u === "lb" ? [2.5, 5, 10] : [1, 1.25, 2.5, 5]).map(n => <button key={n} onClick={() => setInc(n)} className={`flex-1 py-1.5 rounded-lg ${incV === n ? "bg-amber-500 text-black font-semibold" : "bg-zinc-800 text-zinc-300"}`}>{n}{u}</button>)}</div></div>
+      {DEV_PRO && <div className="rounded-2xl bg-zinc-900 p-4 flex items-center justify-between text-sm"><div><div>Pro (테스트용)</div><div className="text-xs text-zinc-500 mt-0.5">결제 연동 전 확인용 스위치예요. 출시 전에 DEV_PRO를 false로 바꾸세요.</div></div><button role="switch" aria-checked={pro} aria-label="Pro" onClick={() => setPro(!pro)} className={`w-12 h-7 rounded-full p-0.5 transition-colors shrink-0 ${pro ? "bg-amber-500" : "bg-zinc-600"}`}><span className={`block w-6 h-6 rounded-full bg-white shadow transition-transform ${pro ? "translate-x-5" : ""}`} /></button></div>}
       <button onClick={exp} className="w-full py-3 rounded-xl bg-zinc-800 flex items-center justify-center gap-2"><Icon n="dl" />{tr("JSON으로 내보내기")}</button>
       <button onClick={() => f.current.click()} className="w-full py-3 rounded-xl bg-zinc-800 flex items-center justify-center gap-2"><Icon n="ul" />{tr("JSON 가져오기")}</button>
       {bk && <button onClick={expBk} className="w-full py-3 rounded-xl bg-zinc-800 text-amber-400 flex items-center justify-center gap-2"><Icon n="dl" />{tr("손상된 원본 데이터 내보내기")}</button>}
@@ -410,7 +447,7 @@ function LineChart({ v, labels }) {
 function Bars({ v, labels, color = "#f59e0b" }) {
   const [sel0, setSel] = useState(null);
   const sel = sel0 !== null && sel0 < v.length ? sel0 : v.length - 1;
-  const W = 320, H = 130, pad = 10, bot = 22, mx = Math.max(...v, 1), bw = (W - 2 * pad) / v.length, step = v.length > 8 ? 2 : 1;
+  const W = 320, H = 130, pad = 10, bot = 22, mx = Math.max(...v, 1), bw = (W - 2 * pad) / v.length, step = Math.ceil(v.length / 8);
   return (
     <div>
       <div className="flex items-baseline justify-between mb-1"><div className="text-sm text-zinc-400">{labels[sel]}</div><div className="font-bold tabular-nums">{fmt(v[sel])}{U}</div></div>
@@ -424,69 +461,152 @@ function Bars({ v, labels, color = "#f59e0b" }) {
     </div>
   );
 }
-function Stats({ data }) {
+function Stats({ data, pro, upgrade }) {
   const logs = data.logs, cnt = {}, disp = {};
   Object.keys(logs).sort().forEach(d => logs[d].exercises.forEach(e => { if (!e.cardio && e.sets.some(s => s.done)) { const k = nk(e.name); cnt[k] = (cnt[k] || 0) + 1; disp[k] = e.name; } }));
   const names = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a]);
+  const [tab, setTab] = useState("sum");
   const [name, setName] = useState("");
-  const [ask, setAsk] = useState(null);
-  const sel = names.includes(name) ? name : names[0];
+  const [part, setPart] = useState("");
+  const [metric, setMetric] = useState("rm");
+  const [per, setPer] = useState("3m");
+  const [prTab, setPrTab] = useState("recent");
+  const pOf = n => PART[n] || "기타";
+  const parts = PARTS.filter(p => names.some(n => pOf(n) === p));
+  const curPart = parts.includes(part) ? part : pOf(names[0]);
+  const inPart = names.filter(n => pOf(n) === curPart);
+  const sel = inPart.includes(name) ? name : inPart[0];
   if (!names.length) return <div className="mt-8 text-center text-sm text-zinc-400">{tr("세트를 완료 체크한 기록이 쌓이면 통계가 표시됩니다.")}</div>;
+  const r1 = n => Math.round(n * 10) / 10;
+  const go = k => { setPart(pOf(k)); setName(k); setTab("ex"); };
   const ses = [];
-  Object.keys(logs).sort().forEach(d => { const e = logs[d].exercises.find(x => !x.cardio && nk(x.name) === sel && x.sets.some(s => s.done)); if (e) { const p = ses[ses.length-1], rm = e1rm(e), v = vol({ exercises: [e] }); ses.push({ d, rm, vol: v, up: !!p && (rm > p.rm || v > p.vol), pr: !!p && rm > Math.max(...ses.map(x => x.rm)) }); } });
+  Object.keys(logs).sort().forEach(d => { const e = logs[d].exercises.find(x => !x.cardio && nk(x.name) === sel && x.sets.some(s => s.done)); if (e) { const p = ses[ses.length-1], rm = e1rm(e), v = vol({ exercises: [e] }); ses.push({ d, rm, vol: v, dr: p ? rm - p.rm : null, up: !!p && (rm > p.rm || v > p.vol), pr: !!p && rm > Math.max(...ses.map(x => x.rm)) }); } });
   const ok = ses.filter(x => x.up).length, tot = Math.max(ses.length-1, 0), rate = tot ? ok/tot : 0;
   const chg = ses.length > 1 && ses[0].rm ? (ses[ses.length-1].rm/ses[0].rm-1)*100 : 0;
-  const verdict = !tot ? tr("비교할 기록이 2회 이상 필요합니다.") : rate >= .6 ? tr("점진적 과부하가 잘 이루어지고 있어요.") : rate >= .3 ? tr("일부 세션에서만 증가했어요. 무게나 횟수를 조금씩 올려보세요.") : tr("정체 구간이에요. 휴식, 영양, 증량 폭을 점검해보세요.");
-  const weeks = Array.from({ length: 8 }, (_, i) => { const d = new Date(); d.setDate(d.getDate() - ((d.getDay() - (data.weekStart === 1 ? 1 : 0) + 7) % 7) - (7-i)*7); const a = ymd(d); const e = new Date(d); e.setDate(e.getDate()+6); const b = ymd(e); return { l: md(a), a, b, v: Object.keys(logs).filter(k => k >= a && k <= b).reduce((t, k) => t + vol(logs[k]), 0) }; });
-  const routineDates = Object.keys(logs).filter(d => logs[d].routine && vol(logs[d]) && prevDates(logs, d).some(p => logs[p].routine === logs[d].routine && vol(logs[p])));
-  const rOk = routineDates.filter(d => overload(logs, d)).length;
-  const cw = weeks[7], pw = weeks[6], wk = Object.keys(logs).filter(k => k >= cw.a && k <= cw.b);
-  const sess = wk.filter(k => vol(logs[k]) > 0).length, prs = wk.reduce((s, k) => s + logs[k].exercises.filter(e => prOf(logs, k, e)).length, 0), dv = pw.v ? Math.round((cw.v / pw.v - 1) * 100) : null;
+  // 주 단위 계산
+  const ws0 = data.weekStart === 1 ? 1 : 0;
+  const parse = k => { const [y, m, d] = k.split("-").map(Number); return new Date(y, m - 1, d); };
+  const addD = (dt, n) => { const d = new Date(dt); d.setDate(d.getDate() + n); return d; };
+  const wkStart = dt => { const d = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate()); d.setDate(d.getDate() - ((d.getDay() - ws0 + 7) % 7)); return d; };
+  const thisWk = wkStart(new Date());
+  const mkWeek = i => { const d = addD(thisWk, -i * 7), a = ymd(d), b = ymd(addD(d, 6)); const ks = Object.keys(logs).filter(k => k >= a && k <= b); return { l: md(a), a, b, ks, v: ks.reduce((t, k) => t + vol(logs[k]), 0), n: ks.filter(k => vol(logs[k]) > 0).length }; };
+  const wcount = {};
+  Object.keys(logs).forEach(k => { if (vol(logs[k]) > 0) { const key = ymd(wkStart(parse(k))); wcount[key] = (wcount[key] || 0) + 1; } });
+  const wkeys = Object.keys(wcount).sort();
+  const firstKey = wkeys[0] || ymd(thisWk);
+  const streak = (() => { let d = thisWk, n = 0; if (!wcount[ymd(d)]) d = addD(d, -7); while (wcount[ymd(d)]) { n++; d = addD(d, -7); } return n; })();
+  const longest = (() => { let run = 0, best = 0, prev = null; wkeys.forEach(k => { run = prev && ymd(addD(parse(prev), 7)) === k ? run + 1 : 1; best = Math.max(best, run); prev = k; }); return best; })();
+  const last4 = [0, 1, 2, 3].map(mkWeek);
+  const avg4 = last4.reduce((t, w) => t + w.n, 0) / Math.max(last4.filter(w => w.a >= firstKey).length, 1);
+  // 기간 선택
+  const nW = per === "1m" ? 5 : per === "3m" ? 13 : Math.min(26, Math.max(2, Math.round((thisWk - parse(firstKey)) / 6048e5) + 1));
+  const cutoff = per === "1m" ? ymd(addD(new Date(), -30)) : per === "3m" ? ymd(addD(new Date(), -90)) : "";
+  const weeks = Array.from({ length: nW }, (_, i) => mkWeek(nW - 1 - i));
+  const cw = mkWeek(0), pw = mkWeek(1);
+  const sess = cw.n, prs = cw.ks.reduce((s, k) => s + logs[k].exercises.filter(e => prOf(logs, k, e)).length, 0), dv = pw.v ? Math.round((cw.v / pw.v - 1) * 100) : null;
+  // 부위별 볼륨 비율
+  const pv = {};
+  Object.keys(logs).filter(k => !cutoff || k >= cutoff).forEach(k => logs[k].exercises.forEach(e => { if (e.cardio) return; const v = vol({ exercises: [e] }); if (v > 0) { const p = PART[nk(e.name)] || "기타"; pv[p] = (pv[p] || 0) + v; } }));
+  const pTot = Object.values(pv).reduce((a, b) => a + b, 0);
+  const pRows = Object.keys(pv).sort((a, b) => pv[b] - pv[a]).map(p => ({ p, pct: Math.round(pv[p] / pTot * 100) }));
+  // PR 기록
+  const bests = {}, bestAt = {}, prEv = [];
+  Object.keys(logs).sort().forEach(d => logs[d].exercises.forEach(e => { if (e.cardio) return; const rm = e1rm(e); if (!(rm > 0)) return; const k = nk(e.name), b = bests[k]; if (b && rm > b) prEv.push({ d, k, name: e.name, rm, gain: rm - b }); if (!b || rm > b) { bests[k] = rm; bestAt[k] = d; } }));
+  const prRecent = prEv.slice(-6).reverse();
+  const prBest = names.filter(k => bests[k]).slice(0, 8);
   const series = n => Object.keys(logs).sort().map(d => { const e = logs[d].exercises.find(x => nk(x.name) === n && !x.cardio && e1rm(x) > 0); return e ? e1rm(e) : null; }).filter(x => x !== null);
   const stalled = names.filter(n => { const s = series(n); return s.length >= 4 && Math.max(...s.slice(-3)) <= Math.max(...s.slice(0, -3)); });
-  const Q = (title, lines) => <button aria-label={tr("{0} 설명", title)} onClick={() => setAsk({ msg: <div className="space-y-1.5"><div className="font-semibold">{title}</div>{lines.map((t, i) => <div key={i} className="text-zinc-400">{t}</div>)}</div>, fn: () => {}, info: true })} className="ml-1.5 w-5 h-5 rounded-full bg-zinc-800 text-zinc-400 text-xs inline-flex items-center justify-center align-middle">?</button>;
-  const last = ses[ses.length - 1], rec = ses.slice(-20);
+  const stallTip = tr("최근 3회 동안 최고 기록을 넘지 못했어요. 횟수를 바꾸거나 디로드(무게 10% 감소) 후 다시 올려보세요.");
+  const stallSel = stalled.includes(sel);
+  const last = ses[ses.length - 1], best = Math.max(...ses.map(x => x.rm));
+  const inPer = ses.filter(x => !cutoff || x.d >= cutoff);
+  const recP = inPer.slice(-60), volP = inPer.slice(-30);
+  const lv = !tot ? "none" : (stallSel || rate < .3) ? "low" : rate >= .6 ? "good" : "mid";
+  const V = {
+    none: [tr("📊 기록을 쌓는 중이에요"), tr("비교할 기록이 2회 이상 필요합니다."), "text-zinc-300"],
+    good: [tr("🔥 잘 늘고 있어요"), tr("점진적 과부하가 잘 이루어지고 있어요."), "text-amber-400"],
+    mid: [tr("📈 들쭉날쭉해요"), tr("일부 세션에서만 증가했어요. 무게나 횟수를 조금씩 올려보세요."), "text-sky-300"],
+    low: [tr("⚠️ 정체 구간이에요"), stallSel ? stallTip : tr("정체 구간이에요. 휴식, 영양, 증량 폭을 점검해보세요."), "text-red-400"]
+  }[lv];
+  const seg = (items, cur, set) => <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }}>{items.map(([k, t]) => <button key={k} onClick={() => set(k)} className={`py-2 rounded-lg text-sm font-semibold ${cur === k ? "bg-amber-500 text-black" : "bg-zinc-800 text-zinc-300"}`}>{t}</button>)}</div>;
+  const Per = <div className="flex gap-1 shrink-0">{[["1m", "1개월"], ["3m", "3개월"], ["all", "전체"]].map(([k, t]) => <button key={k} onClick={() => setPer(k)} className={`px-2.5 py-1 rounded-full text-xs ${per === k ? "bg-amber-500 text-black font-semibold" : "bg-zinc-800 text-zinc-400"}`}>{tr(t)}</button>)}</div>;
+  const lock = (title, node) => pro ? node : <div className="relative rounded-2xl overflow-hidden"><div aria-hidden="true" className="pointer-events-none select-none" style={{ filter: "blur(6px)", opacity: .55 }}>{node}</div><button onClick={upgrade} className="absolute inset-0 flex flex-col items-center justify-center gap-0.5"><span className="text-2xl">🔒</span><span className="text-sm font-semibold">{title}</span><span className="text-xs text-amber-400 font-semibold">{tr("Pro로 업그레이드")}</span></button></div>;
+  const none = <div className="py-6 text-center text-sm text-zinc-400">{tr("이 기간에 기록이 없어요")}</div>;
   return (
     <div className="mt-3 space-y-4">
-      <div className="rounded-2xl bg-zinc-900 p-3">
-        <div className="text-sm font-medium">{tr("이번 주 리포트")}{Q(tr("이번 주 리포트"), [tr("운동: 볼륨이 기록된 날 수예요."), tr("볼륨: 완료한 세트의 무게 × 횟수 합계예요. 웜업은 제외하고, 지난주와 비교한 증감이에요."), tr("PR: 이번 주에 이전 기록보다 추정 1RM이 높았던 종목 수예요.")])}</div>
-        <div className="mt-2 grid grid-cols-3 gap-2 text-center">
-          <div className="rounded-xl bg-zinc-800 py-2"><div className="text-lg font-bold">{tr("{0}회", sess)}</div><div className="text-xs text-zinc-400">{tr("운동")}</div></div>
-          <div className="rounded-xl bg-zinc-800 py-2"><div className="text-lg font-bold">{dv === null ? "-" : (dv > 0 ? "+" : "") + dv + "%"}</div><div className="text-xs text-zinc-400">{tr("볼륨 vs 지난주")}</div></div>
-          <div className="rounded-xl bg-zinc-800 py-2"><div className="text-lg font-bold">{tr("{0}개", prs)}</div><div className="text-xs text-zinc-400">🏆 PR</div></div>
+      {seg([["sum", tr("요약")], ["ex", tr("종목별")]], tab, setTab)}
+      {tab === "sum" && <>
+        <div className="rounded-2xl bg-zinc-900 p-3">
+          <div className="text-sm font-medium">{tr("이번 주 리포트")}</div>
+          <div className="mt-2 grid grid-cols-3 gap-2 text-center">
+            <div className="rounded-xl bg-zinc-800 py-2"><div className="text-lg font-bold">{tr("{0}회", sess)}</div><div className="text-xs text-zinc-400">{tr("운동")}</div></div>
+            <div className="rounded-xl bg-zinc-800 py-2"><div className="text-lg font-bold">{dv === null ? "-" : (dv > 0 ? "+" : "") + dv + "%"}</div><div className="text-xs text-zinc-400">{tr("볼륨 vs 지난주")}</div></div>
+            <div className="rounded-xl bg-zinc-800 py-2"><div className="text-lg font-bold">{tr("{0}개", prs)}</div><div className="text-xs text-zinc-400">🏆 PR</div></div>
+          </div>
+          <div className="text-xs text-zinc-500 mt-2">{tr("볼륨 = 완료한 세트의 무게 × 횟수 합계(웜업 제외) · PR = 이번 주에 최고 기록을 넘은 종목 수")}</div>
         </div>
-        {stalled.length > 0 && <div className="mt-3 text-sm"><div className="text-amber-400 font-medium">{tr("⚠️ 정체 감지")}</div><div className="text-zinc-300 mt-1">{stalled.map(k => disp[k]).join(", ")}</div><div className="text-xs text-zinc-500 mt-1">{tr("최근 3회 동안 최고 기록을 넘지 못했어요. 횟수를 바꾸거나 디로드(무게 10% 감소) 후 다시 올려보세요.")}</div></div>}
-      </div>
-      <div className="rounded-2xl bg-zinc-900 p-3">
-        <div className="text-sm font-medium mb-2">{tr("주간 총 볼륨 (최근 8주)")}{Q(tr("주간 볼륨"), [tr("완료한 세트의 무게 × 횟수 합계예요. 웜업은 제외해요."), tr("🔥는 같은 루틴 이름으로 직전보다 볼륨이 늘어난 날이에요. 아래 숫자는 그 성공 횟수예요.")])}</div>
-        <Bars v={weeks.map(w => w.v)} labels={weeks.map(w => w.l)} />
-        <div className="text-xs text-zinc-400 mt-2">{tr("같은 이름의 운동 기준 과부하 🔥 성공 {0}/{1}회", rOk, routineDates.length)}</div>
-      </div>
-      <div className="rounded-2xl bg-zinc-900 p-3">
-        <select value={sel} onChange={e => setName(e.target.value)} className="w-full bg-zinc-800 rounded-lg p-2.5 text-sm outline-none">{names.map(n => <option key={n} value={n}>{tn(disp[n])} ({tr("{0}회", cnt[n])})</option>)}</select>
-        <div className="mt-3 flex items-end justify-between">
-          <div><div className="text-xs text-zinc-400">{tr("최근 추정 1RM")}{Q(tr("추정 1RM"), [tr("한 번에 들 수 있는 최대 무게를 세트 기록으로 추정한 값이에요."), tr("무게 × (1 + 횟수 ÷ 30) 공식을 쓰고, 웜업 세트는 제외해요."), tr("12회가 넘는 고반복에서는 오차가 커져요.")])}</div><div className="text-3xl font-bold tabular-nums">{last.rm.toFixed(1)}<span className="text-base font-medium text-zinc-400 ml-1">{U}</span></div></div>
-          <div className="text-right"><div className={`text-lg font-bold ${chg > 0 ? "text-amber-400" : "text-zinc-400"}`}>{ses.length > 1 ? (chg > 0 ? "+" : "") + chg.toFixed(1) + "%" : "-"}</div><div className="text-xs text-zinc-400">{tr("첫 기록 대비")}</div></div>
+        {stalled.length > 0 && <div className="rounded-2xl bg-zinc-900 p-3">
+          <div className="text-sm text-amber-400 font-medium">{tr("⚠️ 정체 감지")}</div>
+          <div className="mt-2 flex flex-wrap gap-2">{stalled.map(k => <button key={k} onClick={() => go(k)} className="px-3 py-1.5 rounded-full bg-zinc-800 text-sm">{tn(disp[k])} ›</button>)}</div>
+          <div className="text-xs text-zinc-500 mt-2">{stallTip}</div>
+        </div>}
+        {lock(tr("꾸준함"), <div className="rounded-2xl bg-zinc-900 p-3">
+          <div className="text-sm font-medium">{tr("꾸준함")}</div>
+          <div className="mt-2 grid grid-cols-3 gap-2 text-center">
+            <div className="rounded-xl bg-zinc-800 py-2"><div className="text-lg font-bold">{streak >= 2 && "🔥 "}{tr("{0}주", streak)}</div><div className="text-xs text-zinc-400">{tr("연속 기록")}</div></div>
+            <div className="rounded-xl bg-zinc-800 py-2"><div className="text-lg font-bold">{tr("{0}회", r1(avg4))}</div><div className="text-xs text-zinc-400">{tr("주 평균 (최근 4주)")}</div></div>
+            <div className="rounded-xl bg-zinc-800 py-2"><div className="text-lg font-bold">{tr("{0}주", longest)}</div><div className="text-xs text-zinc-400">{tr("최장 연속")}</div></div>
+          </div>
+          <div className="text-xs text-zinc-500 mt-2">{tr("운동을 기록한 주가 끊기지 않고 이어진 횟수예요. 이번 주 첫 운동 전이면 지난주부터 세요.")}</div>
+        </div>)}
+        {lock(tr("부위별 볼륨 비율"), <div className="rounded-2xl bg-zinc-900 p-3">
+          <div className="flex items-center justify-between gap-2 mb-3"><div className="text-sm font-medium">{tr("부위별 볼륨 비율")}</div>{Per}</div>
+          {pRows.length ? <div className="space-y-2">{pRows.map(r => <div key={r.p} className="flex items-center gap-2 text-sm"><div className="w-16 shrink-0">{tr(r.p)}</div><div className="flex-1 h-2.5 rounded-full bg-zinc-800 overflow-hidden"><div className="h-full rounded-full bg-amber-500" style={{ width: Math.max(r.pct, 2) + "%" }} /></div><div className="w-10 text-right tabular-nums text-zinc-300">{r.pct}%</div></div>)}</div> : none}
+        </div>)}
+        <div className="rounded-2xl bg-zinc-900 p-3">
+          <div className="flex items-center justify-between gap-2 mb-2"><div className="text-sm font-medium">{tr("주간 총 볼륨")}</div>{Per}</div>
+          <Bars key={per} v={weeks.map(w => w.v)} labels={weeks.map(w => w.l)} />
+          <div className="text-xs text-zinc-500 mt-2">{tr("🔥 달력 표시: 같은 이름의 운동에서 직전보다 볼륨이 늘어난 날")}</div>
         </div>
-        <div className="mt-3 grid grid-cols-2 gap-2 text-center">
-          <div className="rounded-xl bg-zinc-800 py-2"><div className="text-lg font-bold">{tot ? Math.round(rate*100) + "%" : "-"}</div><div className="text-xs text-zinc-400">{tr("과부하 성공률")}{Q(tr("과부하 성공률"), [tr("직전 세션보다 추정 1RM 또는 볼륨이 늘어난 세션의 비율이에요."), tr("둘 중 하나만 늘어도 성공으로 세요.")])}</div></div>
-          <div className="rounded-xl bg-zinc-800 py-2"><div className="text-lg font-bold">{tr("{0}회", ses.length)}</div><div className="text-xs text-zinc-400">{tr("기록한 세션")}</div></div>
+        {lock(tr("🏆 PR 기록"), <div className="rounded-2xl bg-zinc-900 p-3">
+          <div className="text-sm font-medium mb-2">{tr("🏆 PR 기록")}</div>
+          {seg([["recent", tr("최근 PR")], ["best", tr("종목별 최고")]], prTab, setPrTab)}
+          <div className="mt-2 divide-y divide-zinc-800 text-sm">
+            {prTab === "recent"
+              ? (prRecent.length ? prRecent.map((x, i) => <button key={x.d + x.k + i} onClick={() => go(x.k)} className="w-full py-2 flex justify-between items-center gap-3 text-left"><span className="min-w-0 truncate">{tn(x.name)}<span className="text-xs text-zinc-500 ml-2">{md(x.d)}</span></span><span className="shrink-0 tabular-nums">{x.rm.toFixed(1)}{U} <span className="text-xs text-amber-400">▲ {r1(x.gain)}</span></span></button>) : <div className="py-4 text-center text-xs text-zinc-500">{tr("아직 PR이 없어요. 같은 종목을 두 번 이상 기록하면 갱신 기록이 쌓여요.")}</div>)
+              : prBest.map(k => <button key={k} onClick={() => go(k)} className="w-full py-2 flex justify-between items-center gap-3 text-left"><span className="min-w-0 truncate">{tn(disp[k])}<span className="text-xs text-zinc-500 ml-2">{md(bestAt[k])}</span></span><span className="shrink-0 tabular-nums">{bests[k].toFixed(1)}{U}</span></button>)}
+          </div>
+        </div>)}
+      </>}
+      {tab === "ex" && <>
+        <div className="rounded-2xl bg-zinc-900 p-3">
+          <div className="flex flex-wrap gap-2">{parts.map(c => <button key={c} onClick={() => setPart(c)} className={`px-3.5 py-1.5 rounded-full text-sm font-semibold ${c === curPart ? "bg-amber-500 text-black" : "bg-zinc-800 text-zinc-300"}`}>{tr(c)}</button>)}</div>
+          <div className="mt-3 pt-3 border-t border-zinc-800 flex flex-wrap gap-2">{inPart.map(n => <button key={n} onClick={() => setName(n)} className={`px-3 py-1.5 rounded-full text-sm ${n === sel ? "bg-sky-500 text-black font-semibold" : "bg-zinc-800 text-zinc-300"}`}>{tn(disp[n])}</button>)}</div>
         </div>
-        <div className="text-sm mt-3">{verdict}</div>
-      </div>
-      <div className="rounded-2xl bg-zinc-900 p-3">
-        <div className="text-sm font-medium mb-2">{tr("추정 1RM 추이")} ({U}{ses.length > 20 ? ", " + tr("최근 20회") : ""})</div>
-        <LineChart key={sel} v={rec.map(x => x.rm)} labels={rec.map(x => md(x.d))} />
-      </div>
-      <div className="rounded-2xl bg-zinc-900 p-3">
-        <div className="text-sm font-medium mb-2">{tr("세션 볼륨")} ({U})</div>
-        <Bars key={sel} v={ses.slice(-10).map(x => x.vol)} labels={ses.slice(-10).map(x => md(x.d))} color="#38bdf8" />
-      </div>
-      <div className="rounded-2xl bg-zinc-900 p-3">
-        <div className="text-sm font-medium">{tr("최근 기록")}</div>
-        <div className="mt-2 divide-y divide-zinc-800 text-sm">{ses.slice().reverse().slice(0, 6).map(x => <div key={x.d} className="py-2 flex justify-between"><span>{x.d} {x.up && "🔥"}{x.pr && "🏆"}</span><span className="text-zinc-400">1RM {x.rm.toFixed(1)} · {fmt(x.vol)}{U}</span></div>)}</div>
-      </div>
-      {ask && <Confirm ask={ask} close={() => setAsk(null)} />}
+        <div className="rounded-2xl bg-zinc-900 p-3">
+          <div className={`text-base font-bold ${V[2]}`}>{V[0]}</div>
+          <div className="text-sm text-zinc-300 mt-1">{V[1]}</div>
+          {tot > 0 && <div className="text-xs text-zinc-500 mt-2">{tr("지난번보다 늘어난 세션 {0}/{1}회", ok, tot)} · {tr("지난 세션보다 추정 1RM이나 볼륨이 늘면 성공으로 세요.")}</div>}
+        </div>
+        <div className="rounded-2xl bg-zinc-900 p-3">
+          <div className="flex items-end justify-between">
+            <div><div className="text-xs text-zinc-400">{tr("추정 최대 무게 (1RM)")}</div><div className="text-3xl font-bold tabular-nums">{last.rm.toFixed(1)}<span className="text-base font-medium text-zinc-400 ml-1">{U}</span></div></div>
+            <div className="text-right"><div className={`text-lg font-bold ${chg > 0 ? "text-amber-400" : "text-zinc-400"}`}>{ses.length > 1 ? (chg > 0 ? "+" : "") + chg.toFixed(1) + "%" : "-"}</div><div className="text-xs text-zinc-400">{tr("첫 기록 대비")}</div></div>
+          </div>
+          <div className="mt-1 text-xs text-zinc-400">{tr("기록한 세션")} {tr("{0}회", ses.length)}{ses.length > 1 && <> · 🏆 {tr("최고 {0}", best.toFixed(1) + U)}</>}</div>
+        </div>
+        <div className="rounded-2xl bg-zinc-900 p-3">
+          <div className="flex items-center justify-between gap-2 mb-3"><div className="text-sm font-medium">{metric === "rm" ? tr("추정 1RM 추이") : tr("세션 볼륨")}</div>{Per}</div>
+          <div className="mb-3">{seg([["rm", tr("추정 1RM")], ["vol", tr("볼륨")]], metric, setMetric)}</div>
+          {!inPer.length ? none : metric === "rm"
+            ? <><LineChart key={sel + per} v={recP.map(x => x.rm)} labels={recP.map(x => md(x.d))} /><div className="text-xs text-zinc-500 mt-2">{tr("추정 1RM = 무게 × (1 + 횟수 ÷ 30), 웜업 제외. 12회가 넘는 세트는 오차가 커요.")}</div></>
+            : <><Bars key={sel + per} v={volP.map(x => x.vol)} labels={volP.map(x => md(x.d))} color="#38bdf8" /><div className="text-xs text-zinc-500 mt-2">{tr("세션 볼륨")} ({U})</div></>}
+        </div>
+        <div className="rounded-2xl bg-zinc-900 p-3">
+          <div className="text-sm font-medium">{tr("최근 기록")}</div>
+          <div className="mt-2 divide-y divide-zinc-800 text-sm">{ses.slice().reverse().slice(0, 6).map(x => <div key={x.d} className="py-2 flex justify-between items-center"><span>{x.d} {x.pr && "🏆"}</span><span className="text-right"><span className="tabular-nums">{x.rm.toFixed(1)}{U}</span>{x.dr !== null && <span className={`text-xs ml-1.5 ${x.dr > 0.05 ? "text-amber-400" : "text-zinc-500"}`}>{x.dr > 0.05 ? "▲ " + r1(x.dr) : x.dr < -0.05 ? "▼ " + r1(-x.dr) : "–"}</span>}<div className="text-xs text-zinc-500">{tr("볼륨")} {fmt(x.vol)}{U}</div></span></div>)}</div>
+        </div>
+      </>}
     </div>
   );
 }
@@ -498,6 +618,11 @@ function App() {
   INC = data.inc || INC;
   const [undo, setUndo] = useState(null);
   const [warn, setWarn] = useState(LOAD_BAD);
+  const [pro, setProS] = useState(() => { try { return localStorage.getItem(PRO_KEY) === "1"; } catch (e) { return false; } });
+  const setPro = v => { setProS(v); try { localStorage.setItem(PRO_KEY, v ? "1" : "0"); } catch (e) {} };
+  const [paywall, setPaywall] = useState(false);
+  const upgrade = () => setPaywall(true);
+  const buy = () => { if (DEV_PRO) setPro(true); /* TODO: 출시 시 Google Play 결제(RevenueCat)로 교체 */ setPaywall(false); };
   const armed = useRef(false);
   const mark = msg => { armed.current = false; setUndo({ msg, snap: data }); };
   useEffect(() => { if (!undo) return; if (!armed.current) armed.current = true; else setUndo(null); }, [data]);
@@ -514,10 +639,11 @@ function App() {
     <div className="max-w-xl mx-auto px-4 pb-24">
       <div className="pt-4 flex items-center justify-between"><div className="text-xl font-extrabold tracking-tight">{tr("과부하 로그")}</div><button aria-label={tr("설정")} onClick={() => setShowSet(true)} className="p-2 rounded-lg bg-zinc-800 text-zinc-300"><Icon n="gear" /></button></div>
       {tab === "cal" && <Calendar data={data} open={setDate} />}
-      {tab === "st" && <Stats data={data} />}
-      {date && <Day mark={mark} date={date} data={data} setData={setData} onClose={() => setDate(null)} />}
-      {showSet && <div className="fixed inset-0 z-40 bg-[#0c0e12] overflow-y-auto" style={{ paddingTop: "env(safe-area-inset-top,0px)" }}><div className="max-w-xl mx-auto p-4 pb-24"><div className="flex items-center justify-between"><div className="text-lg font-bold">{tr("설정")}</div><button aria-label={tr("닫기")} onClick={() => setShowSet(false)} className="p-2 rounded-lg bg-zinc-800"><Icon n="x" /></button></div><Settings mark={mark} data={data} setData={setData} /></div></div>}
+      {tab === "st" && <Stats data={data} pro={pro} upgrade={upgrade} />}
+      {date && <Day mark={mark} pro={pro} upgrade={upgrade} date={date} data={data} setData={setData} onClose={() => setDate(null)} />}
+      {showSet && <div className="fixed inset-0 z-40 bg-[#0c0e12] overflow-y-auto" style={{ paddingTop: "env(safe-area-inset-top,0px)" }}><div className="max-w-xl mx-auto p-4 pb-24"><div className="flex items-center justify-between"><div className="text-lg font-bold">{tr("설정")}</div><button aria-label={tr("닫기")} onClick={() => setShowSet(false)} className="p-2 rounded-lg bg-zinc-800"><Icon n="x" /></button></div><Settings mark={mark} data={data} setData={setData} pro={pro} setPro={setPro} /></div></div>}
       {undo && <div className="fixed bottom-16 inset-x-0 z-[70] px-4"><div className="max-w-xl mx-auto bg-zinc-800 rounded-xl px-4 py-3 flex items-center justify-between text-sm shadow-lg"><span className="flex-1 min-w-0">{undo.msg}</span><div className="flex items-center gap-3 shrink-0"><button onClick={() => { setData(undo.snap); setUndo(null); }} className="text-amber-400 font-semibold">{tr("되돌리기")}</button><button aria-label={tr("닫기")} onClick={() => setUndo(null)} className="text-zinc-400"><Icon n="x" s={16} /></button></div></div></div>}
+      {paywall && <ProSheet onClose={() => setPaywall(false)} onBuy={buy} />}
       {warn && <Confirm ask={{ msg: tr("저장된 데이터를 읽지 못해 원본을 따로 보관했어요. 설정 화면에서 내보낼 수 있어요."), fn: () => {}, info: true }} close={() => setWarn(false)} />}
       <nav className="fixed bottom-0 inset-x-0 z-30 bg-zinc-950/95 border-t border-zinc-800" style={{ paddingBottom: "env(safe-area-inset-bottom,0px)" }}>
         <div className="max-w-xl mx-auto grid grid-cols-2">
