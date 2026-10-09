@@ -169,13 +169,17 @@ function ExPicker({ onPick, onClose, init, added, start, fav, recent, toggleFav 
   );
 }
 
+const TK = "overload-log-timer";
+const tload = () => { try { const d = JSON.parse(localStorage.getItem(TK)); return d && typeof d === "object" ? d : {}; } catch (e) { return {}; } };
 function Timer({ kick, auto, setAuto }) {
-  const [inp, setInp] = useState("90");
-  const [left, setLeft] = useState(null);
-  const [run, setRun] = useState(false);
-  const [done, setDone] = useState(false);
+  const sv = useRef(null);
+  if (!sv.current) { const d = tload(), rem = d.end ? Math.ceil((d.end - Date.now()) / 1000) : 0; sv.current = { inp: /^\d{1,4}$/.test(String(d.inp)) && +d.inp > 0 ? String(d.inp) : "90", end: rem > 0 ? d.end : 0, left: rem > 0 ? rem : (+d.left > 0 ? Math.floor(+d.left) : null), expired: !!d.end && rem <= 0 && rem > -600 }; }
+  const [inp, setInp] = useState(sv.current.inp);
+  const [left, setLeft] = useState(sv.current.left);
+  const [run, setRun] = useState(sv.current.end > 0);
+  const [done, setDone] = useState(sv.current.expired);
   const [open, setOpen] = useState(false);
-  const end = useRef(0), ctx = useRef(null);
+  const end = useRef(sv.current.end), ctx = useRef(null);
   useEffect(() => {
     if (!run) return;
     const tick = () => { const s = Math.ceil((end.current - Date.now()) / 1000); if (s <= 0) { beep(ctx.current); restDone(); try { window.Notification && Notification.permission === "granted" && new Notification(tr("휴식 끝! 다음 세트 가세요 💪")); } catch (e) {} setDone(true); setRun(false); setLeft(null); setTimeout(() => setDone(false), 4000); } else setLeft(s); };
@@ -186,7 +190,8 @@ function Timer({ kick, auto, setAuto }) {
   const start = fresh => { const l = (fresh === true ? null : left) ?? parseInt(inp); if (!l) return; try { window.Notification && Notification.permission === "default" && Notification.requestPermission(); } catch (e) {} try { const C = window.AudioContext || window.webkitAudioContext; ctx.current = ctx.current || new C(); ctx.current.resume(); } catch (e) {} end.current = Date.now() + l * 1000; restStart(end.current); setDone(false); setLeft(l); setRun(true); };
   const reset = () => { setRun(false); setLeft(null); setDone(false); restCancel(); };
   useEffect(() => { if (kick) start(true); }, [kick]);
-  useEffect(() => () => { restCancel(); }, []);
+  useEffect(() => { try { localStorage.setItem(TK, JSON.stringify({ inp, end: run ? end.current : 0, left: run ? null : left })); } catch (e) {} }, [inp, run, run ? 0 : left]);
+  useEffect(() => { if (!sv.current.expired) return; restDone(); const t = setTimeout(() => setDone(false), 4000); return () => clearTimeout(t); }, []);
   const preset = n => { setInp(String(n)); reset(); setOpen(false); };
   return (
     <div className="fixed bottom-0 inset-x-0 z-30 px-3 pointer-events-none" style={{ paddingBottom: "calc(env(safe-area-inset-bottom,0px) + 8px)" }}>
